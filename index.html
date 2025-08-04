@@ -578,22 +578,22 @@
 
     <aside class="right-side">
       <nav class="tabs">
-        <button class="tab-btn active" data-tab="0">🛡️ Why Trust Us?</button>
-        <button class="tab-btn" data-tab="1">💬 Need Support?</button>
-        <button class="tab-btn" data-tab="2">🔒 Is This Safe?</button>
+        <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-1" id="tab-btn-1" tabindex="0">🛡️ Why Trust Us?</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-2" id="tab-btn-2" tabindex="-1">💬 Need Support?</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-3" id="tab-btn-3" tabindex="-1">🔒 Is This Safe?</button>
       </nav>
       
-      <section class="tab-content active">
+      <section id="tab-1" class="tab-content active" role="tabpanel" aria-labelledby="tab-btn-1">
         <p><strong>CryptoSwap.live</strong> is a purely cosmetic demonstration site designed for educational purposes. We never handle real funds or execute actual transactions, ensuring complete safety.</p>
         <p>We use live market data to provide realistic swap rates, but no real cryptocurrency exchanges occur on this platform.</p>
       </section>
       
-      <section class="tab-content">
+      <section id="tab-2" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-2" hidden>
         <p>For questions or support regarding this demo platform, please reach out through our official channels.</p>
         <p><strong>Remember:</strong> This site does not process real payments, store user data, or execute actual cryptocurrency transactions.</p>
       </section>
       
-      <section class="tab-content">
+      <section id="tab-3" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-3" hidden>
         <p>Since CryptoSwap.live doesn't execute real swaps or require wallet connections, it's completely secure to use.</p>
         <p><strong>Always exercise caution</strong> with real cryptocurrency services and never share private keys or seed phrases.</p>
       </section>
@@ -649,6 +649,10 @@
           }
         } catch (e) {
           console.error('Error fetching prices:', e);
+          // Fallback prices if API fails
+          Object.keys(tokenIds).forEach(key => {
+            if (!usdPrices[key]) usdPrices[key] = 1;
+          });
         }
       }
 
@@ -842,24 +846,4 @@
         const amountUsd = amountCrypto * fromPrice;
         const receivedBeforeFee = amountCrypto * fromPrice / toPrice;
         const fee = receivedBeforeFee * 0.01; // 1% fee
-        const receivedAfterFee = receivedBeforeFee - fee;
-        
-        // Store swap data in localStorage for the confirmation page
-        const swapData = {
-          id: swapId,
-          fromToken: from,
-          toToken: to,
-          amountCrypto: amountCrypto,
-          amountUsd: amountUsd,
-          receivedAmount: receivedAfterFee,
-          receivedUsd: receivedAfterFee * toPrice,
-          fee: fee,
-          feeUsd: fee * toPrice,
-          destAddress: destAddressInput.value,
-          timestamp: Date.now()
-        };
-        
-        localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
-
-        // Redirect to swap confirmation page using hash routing
-        window.location.href = `#swap
+        const receivedAf
