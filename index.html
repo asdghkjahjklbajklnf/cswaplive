@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -476,7 +475,7 @@
     async function fetchPrices() {
       try {
         const ids = Object.values(tokenIds).join(',');
-        const res = await fetch(https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd);
+        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
         const data = await res.json();
         for (const [key, id] of Object.entries(tokenIds)) {
           usdPrices[key] = data[id]?.usd ?? 1;
@@ -598,7 +597,7 @@
 
       if (usdValue < 10) {
         swapBtn.disabled = true;
-        rateDisplay.textContent = Minimum swap amount is $10 USD equivalent;
+        rateDisplay.textContent = `Minimum swap amount is $10 USD equivalent`;
         clearError();
         return;
       } else {
@@ -614,22 +613,22 @@
       }
 
       if (currentAmountType === 'crypto') {
-        rateDisplay.textContent = Estimated: ${received.toFixed(5)} ${to} (includes 1% fee);
+        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} (includes 1% fee)`;
       } else {
         // USD input - convert back to crypto amount entered
         const cryptoAmount = amountVal / fromPrice;
-        rateDisplay.textContent = Estimated: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee);
+        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee)`;
       }
     }
 
     // Show error message below swap form
     function showError(msg) {
-      errorContainer.innerHTML = 
+      errorContainer.innerHTML = `
         <div class="error-message" role="alert" aria-live="assertive">
           ${msg}
           <button class="close-error" aria-label="Close error message">&times;</button>
         </div>
-      ;
+      `;
       const closeBtn = errorContainer.querySelector('.close-error');
       closeBtn.addEventListener('click', () => {
         clearError();
@@ -689,10 +688,10 @@
         timestamp: Date.now()
       };
       
-      localStorage.setItem(swap_${swapId}, JSON.stringify(swapData));
+      localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
 
       // Redirect to swap confirmation page
-      window.location.href = swap.html?id=${swapId};
+      window.location.href = `swap.html?id=${swapId}`;
     }
 
     // Tab switching logic
@@ -769,5 +768,3 @@
 
 </body>
 </html>
-
-
