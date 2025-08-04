@@ -2,121 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Swap Confirmation | CryptoSwap.live</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>Swap Confirmation - CryptoSwap.live</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: #121214;
+      background-color: #0f0f10;
       color: #e1e1e6;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 2rem;
+      min-height: 100vh;
     }
     .container {
-      background-color: #1e1e22;
-      border: 1px solid #3a2a56;
-      padding: 2rem;
+      background: #1e1e22;
       border-radius: 1rem;
+      padding: 2rem;
+      max-width: 600px;
       width: 100%;
-      max-width: 700px;
-      box-shadow: 0 0 15px rgba(142, 68, 173, 0.7);
+      box-shadow: 0 0 20px rgba(142, 68, 173, 0.7);
     }
-    .heading {
-      font-size: 1.8rem;
+    h1 {
       margin-bottom: 1rem;
       color: #d3a7f2;
+      text-align: center;
     }
     .timer {
-      font-size: 1.2rem;
-      color: #ccc;
-      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #9b5de5;
     }
     .swap-details {
-      background-color: #18181c;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .swap-details p {
-      margin: 0.5rem 0;
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+    }
+    .fee {
+      color: #f35a5a;
+      font-weight: 600;
     }
     #qrcode {
+      margin: 0 auto;
+      width: 180px;
+      height: 180px;
+    }
+    .warning {
       margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #f35a5a;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="heading">Swap Initiated</div>
-    <div class="timer" id="countdown">Transaction active for 59:59</div>
-    <div class="swap-details">
-      <p><strong>From:</strong> <span id="fromCrypto"></span></p>
-      <p><strong>To:</strong> <span id="toCrypto"></span></p>
-      <p><strong>Send:</strong> <span id="sendAmount"></span> (<span id="sendUSD"></span>)</p>
-      <p><strong>Receive:</strong> <span id="receiveAmount"></span> (<span id="receiveUSD"></span>)</p>
-      <p><strong>1% Fee:</strong> <span id="fee"></span></p>
-      <p><strong>Destination Address:</strong> <span id="address"></span></p>
+    <h1>Swap Confirmation</h1>
+    <div class="timer" id="timer">Transaction active for 59:59</div>
+
+    <div class="swap-details" id="swapDetails">
+      <!-- Filled dynamically -->
     </div>
+
     <div id="qrcode"></div>
+
+    <div class="warning">Please do not close or reload this page during the transaction.</div>
   </div>
 
+  <!-- QR Code library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <script>
-    // Replace with real dynamic data in practice
-    const swapData = JSON.parse(localStorage.getItem('latestSwap')) || {
-      from: 'BTC',
-      to: 'ETH',
-      sendAmount: 0.0021,
-      sendUSD: 120,
-      receiveAmount: 0.051,
-      receiveUSD: 119,
-      fee: 1.00,
-    };
-
-    const addresses = {
-      BTC: "bc1qtr9ah0xdel7a00xph92kd3l4z64h9du3yhs560",
-      ETH: "0xf24449533C35cC9687AECB783ef6379D83D50EF2",
-      XRP: "rG5oZib29ni9tmPn4xSEjwdyFsNXZX8aHH",
-      USDT: "0xf24449533C35cC9687AECB783ef6379D83D50EF2",
-      BNB: "0xf24449533C35cC9687AECB783ef6379D83D50EF2",
-      SOL: "22YfDpLZspeMvMAnu1UzRVSd9h7qPqHsmh1n6SdegV4v",
-      USDC: "0xf24449533C35cC9687AECB783ef6379D83D50EF2",
-      TRON: "TSMBBsmGePjAV5RGtQx8rT3zzXqDUFyad4",
-      DOGE: "DSv9vMMBxorzW3VSgVQs1mRsHaVUCVW8Ro",
-      ADA: "addr1q9sr0klkmz0mx5z6ngrjuyszuwt7kflge4dz9xxq7m228wtqxldldkylkdg94xs89cfq9cuhavn73n26y2vvpak55wusefutty",
-      AVAX: "0xf24449533C35cC9687AECB783ef6379D83D50EF2",
-      LTC: "0xf24449533C35cC9687AECB783ef6379D83D50EF2",
-      MATIC: "0xf24449533C35cC9687AECB783ef6379D83D50EF2"
-    };
-
-    document.getElementById('fromCrypto').textContent = swapData.from;
-    document.getElementById('toCrypto').textContent = swapData.to;
-    document.getElementById('sendAmount').textContent = swapData.sendAmount + ' ' + swapData.from;
-    document.getElementById('sendUSD').textContent = `$${swapData.sendUSD}`;
-    document.getElementById('receiveAmount').textContent = swapData.receiveAmount + ' ' + swapData.to;
-    document.getElementById('receiveUSD').textContent = `$${swapData.receiveUSD}`;
-    document.getElementById('fee').textContent = `$${swapData.fee}`;
-
-    const address = addresses[swapData.from];
-    document.getElementById('address').textContent = address;
-
-    // QR Code string with URI if supported
-    const qrString = `${swapData.from.toLowerCase()}:${address}?amount=${swapData.sendAmount}`;
-    new QRCode(document.getElementById("qrcode"), qrString);
-
-    // Countdown
-    let secondsLeft = 3600;
-    function updateCountdown() {
-      const minutes = Math.floor(secondsLeft / 60);
-      const seconds = secondsLeft % 60;
-      document.getElementById('countdown').textContent = `Transaction active for ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      if (secondsLeft > 0) secondsLeft--;
+    // Helper: format number nicely
+    function formatNumber(num, decimals = 8) {
+      return parseFloat(num).toFixed(decimals).replace(/\.?0+$/, '');
     }
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+
+    // Get swapId from URL path, e.g. /swap/689041c0-a160-8011-8539-31ca185df6a9
+    const pathParts = window.location.pathname.split('/');
+    const swapId = pathParts[pathParts.length - 1];
+
+    // Load swap data from localStorage (key: 'latestSwap')
+    const swapDataRaw = localStorage.getItem('latestSwap');
+    if (!swapDataRaw) {
+      document.getElementById('swapDetails').innerHTML = '<p style="color: #f35a5a;">No swap data found. Please return to the main page and initiate a swap.</p>';
+      throw new Error('No swap data found');
+    }
+    const swapData = JSON.parse(swapDataRaw);
+
+    // Show swap details
+    const swapDetailsDiv = document.getElementById('swapDetails');
+    swapDetailsDiv.innerHTML = `
+      <div class="detail-row"><strong>From:</strong> ${swapData.from}</div>
+      <div class="detail-row"><strong>To:</strong> ${swapData.to}</div>
+      <div class="detail-row"><strong>Amount sent:</strong> ${formatNumber(swapData.sendAmount)} ${swapData.from} (~$${swapData.sendUSD.toFixed(2)})</div>
+      <div class="detail-row"><strong>Amount to receive:</strong> ${formatNumber(swapData.receiveAmount)} ${swapData.to} (~$${swapData.receiveUSD.toFixed(2)})</div>
+      <div class="detail-row fee"><strong>Fee (1%):</strong> $${swapData.fee.toFixed(2)}</div>
+      <div class="detail-row"><strong>Destination address:</strong> <span style="word-break: break-all;">${swapData.destination}</span></div>
+    `;
+
+    // Create QR code for destination address (sending crypto)
+    new QRCode(document.getElementById('qrcode'), {
+      text: swapData.destination,
+      width: 180,
+      height: 180,
+      colorDark: "#d3a7f2",
+      colorLight: "#0f0f10",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Timer countdown from 59:59
+    let timeLeft = 59 * 60 + 59; // seconds
+
+    const timerEl = document.getElementById('timer');
+
+    function updateTimer() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerEl.textContent = `Transaction active for ${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        timerEl.textContent = "Transaction expired.";
+        // Optionally disable further interaction here
+      }
+      timeLeft--;
+    }
+
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+
+    // Warn user if they try to close or reload the page
+    window.addEventListener('beforeunload', function (e) {
+      e.preventDefault();
+      e.returnValue = '';
+    });
   </script>
 </body>
 </html>
