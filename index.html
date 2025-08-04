@@ -5,861 +5,292 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CryptoSwap.live - Cosmetic Crypto Swap</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
-
-    :root {
-      --bg-dark: #121214;
-      --bg-darker: #0b0b0d;
-      --bg-card: #1a1a1f;
-      --accent: #8e44ad;
-      --accent-hover: #732d91;
-      --accent-light: rgba(142, 68, 173, 0.1);
-      --text-light: #e1e1e6;
-      --text-muted: #9a8cbf;
-      --input-bg: #1e1e22;
-      --input-border: #3a2a56;
-      --shadow: 0 0 30px rgba(142, 68, 173, 0.2);
-      --shadow-hover: 0 0 40px rgba(142, 68, 173, 0.3);
-      --success: #27ae60;
-      --warning: #f39c12;
-      --error: #e74c3c;
-      --gradient: linear-gradient(135deg, var(--accent), #9b59b6);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-light);
-      min-height: 100vh;
-      overflow-x: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f0f10;
+      color: #e1e1e6;
     }
-
-    .header {
-      text-align: center;
-      padding: 2rem 1rem;
-      background: linear-gradient(135deg, rgba(142, 68, 173, 0.1), rgba(155, 89, 182, 0.05));
-      border-bottom: 1px solid rgba(142, 68, 173, 0.2);
-    }
-
-    .header h1 {
-      font-size: 3rem;
-      font-weight: 800;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin: 0;
-      text-shadow: 0 0 30px rgba(142, 68, 173, 0.5);
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      margin: 0.5rem 0 0 0;
-      font-weight: 500;
-    }
-
-    main {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 3rem;
-      min-height: calc(100vh - 200px);
-    }
-
-    .left-main {
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    /* Swap container */
-    .swap-container {
-      background: var(--bg-card);
-      padding: 2.5rem;
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(142, 68, 173, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .swap-container:hover {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
-    .swap-container h2 {
-      margin: 0 0 2rem 0;
-      font-weight: 700;
-      font-size: 2.2rem;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .swap-form {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-
-    label {
-      font-weight: 600;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    select, input[type="number"], input[type="text"] {
-      width: 100%;
-      background: var(--input-bg);
-      border: 2px solid var(--input-border);
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      color: var(--text-light);
-      font-size: 1.1rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    select:focus, input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(142, 68, 173, 0.3);
-      background: rgba(30, 30, 34, 0.8);
-    }
-
-    select option {
-      background: var(--bg-darker);
-      color: var(--text-light);
-      padding: 1rem;
-    }
-
-    .amount-toggle {
-      display: flex;
-      gap: 2rem;
-      background: var(--input-bg);
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      border: 2px solid var(--input-border);
-    }
-
-    .amount-toggle label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--accent);
-      text-transform: none;
-      letter-spacing: normal;
-      font-size: 1rem;
-      transition: color 0.3s ease;
-    }
-
-    .amount-toggle label:hover {
-      color: var(--text-light);
-    }
-
-    input[type="radio"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-    }
-
-    .swap-btn {
-      margin-top: 1rem;
-      padding: 1.4rem 0;
-      background: var(--gradient);
-      border: none;
-      color: white;
-      font-weight: 700;
-      font-size: 1.4rem;
-      border-radius: 16px;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      transition: all 0.3s ease;
-      font-family: 'Poppins', sans-serif;
-      letter-spacing: 0.05em;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .swap-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 40px rgba(142, 68, 173, 0.4);
-    }
-
-    .swap-btn:disabled {
-      background: linear-gradient(135deg, #5c427b, #4a3866);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .swap-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .swap-btn:hover:not(:disabled)::before {
-      left: 100%;
-    }
-
-    .rate-display {
-      background: var(--accent-light);
-      border: 1px solid rgba(142, 68, 173, 0.3);
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--text-light);
-      min-height: 3rem;
-      display: flex;
-      align-items: center;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* History container */
-    .history-container {
-      background: var(--bg-card);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(142, 68, 173, 0.1);
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .history-container:hover {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
-    .history-header {
-      background: var(--gradient);
-      padding: 1.5rem 2rem;
-      color: white;
-    }
-
-    .history-header h3 {
-      margin: 0;
-      font-weight: 700;
-      font-size: 1.4rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .history-content {
-      padding: 0;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-variant-numeric: tabular-nums;
-      min-width: 600px;
-    }
-
-    thead th {
-      background: var(--bg-darker);
-      color: var(--accent);
-      padding: 1rem 1.5rem;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 2px solid var(--accent);
-    }
-
-    tbody tr {
-      border-bottom: 1px solid rgba(142, 68, 173, 0.1);
-      transition: background-color 0.3s ease;
-    }
-
-    tbody tr:hover {
-      background: rgba(142, 68, 173, 0.05);
-    }
-
-    tbody td {
-      color: var(--text-light);
-      padding: 1rem 1.5rem;
-      font-weight: 500;
-    }
-
-    /* Right sidebar */
-    .right-side {
-      background: var(--bg-card);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(142, 68, 173, 0.1);
-      padding: 2rem;
-      height: fit-content;
-      position: sticky;
-      top: 2rem;
-      transition: all 0.3s ease;
-    }
-
-    .right-side:hover {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
-    .tabs {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .tab-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      text-align: left;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-    }
-
-    .tab-btn:hover {
-      background: var(--accent-light);
-      color: var(--text-light);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
-    .tab-btn.active {
-      background: var(--gradient);
-      color: white;
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(142, 68, 173, 0.3);
-    }
-
-    .tab-content {
-      background: var(--input-bg);
-      border-radius: 12px;
-      padding: 1.5rem;
-      color: var(--text-light);
-      font-weight: 400;
-      line-height: 1.6;
-      display: none;
-      border: 1px solid rgba(142, 68, 173, 0.1);
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    /* Error message */
-    .error-message {
-      background: linear-gradient(135deg, var(--error), #c0392b);
-      color: white;
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      margin-top: 1rem;
-      font-weight: 600;
+    header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-      border: 1px solid rgba(231, 76, 60, 0.3);
+      padding: 1rem 2rem;
+      background-color: #1c1c1f;
+      border-bottom: 1px solid #333;
     }
-
-    .error-message .close-error {
-      background: transparent;
-      border: none;
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .swap-container, .history-container {
+      padding: 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .swap-form label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .swap-form select, .swap-form input {
+      width: 100%;
+      padding: 0.5rem;
+      background: #1e1e22;
+      border: 1px solid #444;
+      border-radius: 0.5rem;
+      color: #fff;
+    }
+    .swap-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1.5rem;
+      background-color: #9b5de5;
       color: white;
-      font-weight: 700;
-      font-size: 1.3rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: bold;
       cursor: pointer;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.3s ease;
     }
-
-    .error-message .close-error:hover {
-      background: rgba(255, 255, 255, 0.2);
+    .rate-display {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #d3a7f2;
     }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      main {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-      
-      .right-side {
-        position: static;
-      }
+    .history-container table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      color: #ddd;
     }
-
-    @media (max-width: 768px) {
-      .header h1 {
-        font-size: 2.2rem;
-      }
-      
-      main {
-        padding: 1rem;
-      }
-      
-      .swap-container, .history-container, .right-side {
-        padding: 1.5rem;
-      }
-      
-      .form-row {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      
-      .amount-toggle {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      
-      table {
-        min-width: auto;
-        font-size: 0.9rem;
-      }
-      
-      thead th, tbody td {
-        padding: 0.8rem 1rem;
-      }
+    .history-container th, .history-container td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #333;
+      text-align: left;
     }
-
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
     }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg-darker);
-      border-radius: 4px;
+    .modal.active {
+      display: flex;
     }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--gradient);
-      border-radius: 4px;
+    .modal-content {
+      background: #1c1c1f;
+      padding: 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      color: #fff;
     }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--accent-hover);
+    .modal-close-btn {
+      margin-top: 1rem;
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    .wallet-address {
+      background: #2a2a2e;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-top: 0.5rem;
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🔄 CryptoSwap.live</h1>
-    <p>Secure & Fast Cryptocurrency Exchange</p>
+
+<header>
+  <h1>CryptoSwap.live</h1>
+  <button id="wallet-btn">Connect Wallet</button>
+</header>
+
+<main>
+  <section class="swap-container" aria-label="Swap form">
+    <h2>Swap Tokens</h2>
+    <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
+      <div>
+        <label for="from-token">From</label>
+        <select id="from-token" required>
+          <option value="" disabled selected>Select token</option>
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="USDT">Tether (USDT)</option>
+          <option value="BNB">Binance Coin (BNB)</option>
+          <option value="ADA">Cardano (ADA)</option>
+          <option value="SOL">Solana (SOL)</option>
+          <option value="LTC">Litecoin (LTC)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="from-amount">Amount</label>
+        <input type="number" id="from-amount" min="0" step="any" placeholder="0.0" required />
+      </div>
+
+      <div>
+        <label for="to-token">To</label>
+        <select id="to-token" required>
+          <option value="" disabled selected>Select token</option>
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="USDT">Tether (USDT)</option>
+          <option value="BNB">Binance Coin (BNB)</option>
+          <option value="ADA">Cardano (ADA)</option>
+          <option value="SOL">Solana (SOL)</option>
+          <option value="LTC">Litecoin (LTC)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="swap-btn" disabled>Swap</button>
+
+      <div class="rate-display" id="rate-display">
+        Select tokens and amount to see estimated rate
+      </div>
+    </form>
+  </section>
+
+  <section class="history-container" aria-label="Recent swap history">
+    <h3>Recent Swaps</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>From</th>
+          <th>Amount</th>
+          <th>To</th>
+          <th>Received</th>
+        </tr>
+      </thead>
+      <tbody id="swap-history"></tbody>
+    </table>
+  </section>
+</main>
+
+<div class="modal" id="wallet-modal" role="dialog" aria-modal="true">
+  <div class="modal-content">
+    <h4>Connected Wallet</h4>
+    <div class="wallet-address" id="wallet-address">0x1234...ABCD5678EF90</div>
+    <button class="modal-close-btn" id="wallet-close-btn">Close</button>
   </div>
+</div>
 
-  <main>
-    <section class="left-main">
-      <section class="swap-container">
-        <h2>⚡ Instant Swap</h2>
-        <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="from-token">From Token</label>
-              <select id="from-token" name="from-token" required>
-                <option value="" disabled selected>Select token</option>
-                <option value="BTC">Bitcoin (BTC)</option>
-                <option value="ETH">Ethereum (ETH)</option>
-                <option value="USDT">Tether (USDT)</option>
-                <option value="BNB">Binance Coin (BNB)</option>
-                <option value="ADA">Cardano (ADA)</option>
-                <option value="SOL">Solana (SOL)</option>
-                <option value="LTC">Litecoin (LTC)</option>
-              </select>
-            </div>
+<script>
+(() => {
+  const tokenIds = {
+    BTC: 'bitcoin', ETH: 'ethereum', USDT: 'tether',
+    BNB: 'binancecoin', ADA: 'cardano', SOL: 'solana', LTC: 'litecoin'
+  };
+  let usdPrices = {};
+  let swapHistory = [];
+  const fromToken = document.getElementById('from-token');
+  const toToken = document.getElementById('to-token');
+  const amountInput = document.getElementById('from-amount');
+  const rateDisplay = document.getElementById('rate-display');
+  const swapBtn = document.querySelector('.swap-btn');
+  const historyTbody = document.getElementById('swap-history');
+  const walletBtn = document.getElementById('wallet-btn');
+  const walletModal = document.getElementById('wallet-modal');
+  const walletCloseBtn = document.getElementById('wallet-close-btn');
+  const walletAddress = document.getElementById('wallet-address');
+  let walletConnected = false;
+  const fakeWalletAddress = '0x1234...ABCD5678EF90';
 
-            <div class="form-group">
-              <label for="to-token">To Token</label>
-              <select id="to-token" name="to-token" required>
-                <option value="" disabled selected>Select token</option>
-                <option value="BTC">Bitcoin (BTC)</option>
-                <option value="ETH">Ethereum (ETH)</option>
-                <option value="USDT">Tether (USDT)</option>
-                <option value="BNB">Binance Coin (BNB)</option>
-                <option value="ADA">Cardano (ADA)</option>
-                <option value="SOL">Solana (SOL)</option>
-                <option value="LTC">Litecoin (LTC)</option>
-              </select>
-            </div>
-          </div>
+  function formatDate(d) {
+    return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  }
 
-          <div class="form-group">
-            <label>Amount Type</label>
-            <div class="amount-toggle">
-              <label><input type="radio" name="amount-type" value="crypto" checked> 💰 Crypto Amount</label>
-              <label><input type="radio" name="amount-type" value="usd"> 💵 USD Amount</label>
-            </div>
-          </div>
+  function updateHistory() {
+    historyTbody.innerHTML = '';
+    swapHistory.slice().reverse().forEach(s => {
+      const row = `<tr><td>${formatDate(new Date(s.date))}</td><td>${s.fromToken}</td><td>${s.amount.toFixed(6)}</td><td>${s.toToken}</td><td>${s.received.toFixed(6)}</td></tr>`;
+      historyTbody.innerHTML += row;
+    });
+  }
 
-          <div class="form-group">
-            <label for="from-amount" id="amount-label">Amount (Crypto)</label>
-            <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.00000" required />
-          </div>
+  async function fetchPrices() {
+    const ids = Object.values(tokenIds).join(',');
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+    const data = await res.json();
+    for (const [symbol, id] of Object.entries(tokenIds)) {
+      usdPrices[symbol] = data[id]?.usd || 0;
+    }
+  }
 
-          <div class="form-group">
-            <label for="dest-address">Destination Address (Optional)</label>
-            <input type="text" id="dest-address" name="dest-address" placeholder="Enter destination wallet address" />
-          </div>
+  function updateEstimate() {
+    const f = fromToken.value;
+    const t = toToken.value;
+    const a = parseFloat(amountInput.value);
+    if (!f || !t || f === t || isNaN(a) || a <= 0) {
+      rateDisplay.textContent = 'Select tokens and amount to see estimated rate';
+      swapBtn.disabled = true;
+      return;
+    }
+    const rate = usdPrices[f] / usdPrices[t];
+    const received = a * rate;
+    rateDisplay.textContent = `Estimated: ${received.toFixed(6)} ${t} (1 ${f} ≈ ${rate.toFixed(6)} ${t})`;
+    swapBtn.disabled = false;
+  }
 
-          <button type="submit" class="swap-btn" disabled>🚀 Execute Swap</button>
+  function generateUUID() {
+    return crypto.randomUUID?.() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
-          <div class="rate-display" id="rate-display">
-            Select tokens and amount to see estimated rate
-          </div>
+  document.getElementById('swap-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = fromToken.value;
+    const t = toToken.value;
+    const a = parseFloat(amountInput.value);
+    const rate = usdPrices[f] / usdPrices[t];
+    const received = a * rate;
+    const id = generateUUID();
+    const data = {
+      id,
+      fromToken: f,
+      toToken: t,
+      amount: a,
+      received,
+      sendUSD: a * usdPrices[f],
+      receiveUSD: (a * usdPrices[f]) * 0.99,
+      fee: (a * usdPrices[f]) * 0.01,
+      destination: fakeWalletAddress,
+      date: new Date().toISOString()
+    };
+    localStorage.setItem('latestSwap', JSON.stringify(data));
+    swapHistory.push(data);
+    updateHistory();
+    window.location.href = `/swap/index.html?swapId=${id}`;
+  });
 
-          <div id="error-container"></div>
-        </form>
-      </section>
+  [fromToken, toToken, amountInput].forEach(el => el.addEventListener('input', updateEstimate));
+  walletBtn.addEventListener('click', () => {
+    if (!walletConnected) {
+      walletModal.classList.add('active');
+      walletAddress.textContent = fakeWalletAddress;
+      walletBtn.textContent = 'Wallet Connected';
+      walletBtn.disabled = true;
+      walletConnected = true;
+    }
+  });
+  walletCloseBtn.addEventListener('click', () => walletModal.classList.remove('active'));
+  walletModal.addEventListener('click', e => { if (e.target === walletModal) walletModal.classList.remove('active'); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') walletModal.classList.remove('active'); });
 
-      <section class="history-container">
-        <div class="history-header">
-          <h3>📈 Recent Activity</h3>
-        </div>
-        <div class="history-content">
-          <table>
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>From</th>
-                <th>Amount</th>
-                <th>To</th>
-                <th>Received</th>
-              </tr>
-            </thead>
-            <tbody id="swap-history">
-              <!-- dummy rows inserted by JS -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </section>
+  fetchPrices().then(updateEstimate);
+  setInterval(fetchPrices, 60000);
+})();
+</script>
 
-    <aside class="right-side">
-      <nav class="tabs">
-        <button class="tab-btn active" data-tab="0">🛡️ Why Trust Us?</button>
-        <button class="tab-btn" data-tab="1">💬 Need Support?</button>
-        <button class="tab-btn" data-tab="2">🔒 Is This Safe?</button>
-      </nav>
-      
-      <section class="tab-content active">
-        <p><strong>CryptoSwap.live</strong> is a purely cosmetic demonstration site designed for educational purposes. We never handle real funds or execute actual transactions, ensuring complete safety.</p>
-        <p>We use live market data to provide realistic swap rates, but no real cryptocurrency exchanges occur on this platform.</p>
-      </section>
-      
-      <section class="tab-content">
-        <p>For questions or support regarding this demo platform, please reach out through our official channels.</p>
-        <p><strong>Remember:</strong> This site does not process real payments, store user data, or execute actual cryptocurrency transactions.</p>
-      </section>
-      
-      <section class="tab-content">
-        <p>Since CryptoSwap.live doesn't execute real swaps or require wallet connections, it's completely secure to use.</p>
-        <p><strong>Always exercise caution</strong> with real cryptocurrency services and never share private keys or seed phrases.</p>
-      </section>
-    </aside>
-  </main>
-
-  <script>
-    (() => {
-      const tokenIds = {
-        BTC: 'bitcoin',
-        ETH: 'ethereum',
-        USDT: 'tether',
-        BNB: 'binancecoin',
-        ADA: 'cardano',
-        SOL: 'solana',
-        LTC: 'litecoin'
-      };
-
-      const usdPrices = {};
-      let swapHistory = [];
-
-      // Elements
-      const fromTokenSelect = document.getElementById('from-token');
-      const toTokenSelect = document.getElementById('to-token');
-      const fromAmountInput = document.getElementById('from-amount');
-      const rateDisplay = document.getElementById('rate-display');
-      const swapBtn = document.querySelector('.swap-btn');
-      const historyTbody = document.getElementById('swap-history');
-      const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
-      const amountLabel = document.getElementById('amount-label');
-      const errorContainer = document.getElementById('error-container');
-      const destAddressInput = document.getElementById('dest-address');
-
-      let currentAmountType = 'crypto';
-
-      // Generate UUID for swap ID
-      function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
-      }
-
-      // Fetch prices from CoinGecko
-      async function fetchPrices() {
-        try {
-          const ids = Object.values(tokenIds).join(',');
-          const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-          const data = await res.json();
-          for (const [key, id] of Object.entries(tokenIds)) {
-            usdPrices[key] = data[id]?.usd ?? 1;
-          }
-        } catch (e) {
-          console.error('Error fetching prices:', e);
-        }
-      }
-
-      // Helper to format date/time
-      function formatDate(date) {
-        return date.toLocaleString();
-      }
-
-      // Render recent swap history
-      function renderHistory() {
-        historyTbody.innerHTML = '';
-        for (const swap of swapHistory.slice().reverse()) {
-          const tr = document.createElement('tr');
-
-          const tdDate = document.createElement('td');
-          tdDate.textContent = formatDate(swap.date);
-          tr.appendChild(tdDate);
-
-          const tdFrom = document.createElement('td');
-          tdFrom.textContent = swap.fromToken;
-          tr.appendChild(tdFrom);
-
-          const tdAmount = document.createElement('td');
-          tdAmount.textContent = swap.amount.toFixed(5);
-          tr.appendChild(tdAmount);
-
-          const tdTo = document.createElement('td');
-          tdTo.textContent = swap.toToken;
-          tr.appendChild(tdTo);
-
-          const tdReceived = document.createElement('td');
-          tdReceived.textContent = swap.received.toFixed(5);
-          tr.appendChild(tdReceived);
-
-          historyTbody.appendChild(tr);
-        }
-      }
-
-      // Add a new dummy swap every ~3-7 mins (scaled here to 10s-20s)
-      function randomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
-      
-      function addNewDummySwap() {
-        const tokens = Object.keys(tokenIds);
-        const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
-
-        const minutesGap = randomInt(5, 20);
-        const secondsGap = randomInt(0, 59);
-        const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
-
-        let fromToken = tokens[randomInt(0, tokens.length - 1)];
-        let toToken;
-        do {
-          toToken = tokens[randomInt(0, tokens.length - 1)];
-        } while (toToken === fromToken);
-
-        let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
-
-        const fromPrice = usdPrices[fromToken] || 1;
-        const toPrice = usdPrices[toToken] || 1;
-        const received = +(amount * fromPrice / toPrice).toFixed(5);
-
-        swapHistory.push({
-          date: new Date(newTime),
-          fromToken,
-          toToken,
-          amount,
-          received
-        });
-
-        if (swapHistory.length > 20) {
-          swapHistory.shift(); // keep max 20 swaps
-        }
-        renderHistory();
-      }
-
-      // Calculate received tokens for swap UI based on current input & prices
-      function calculateReceived(from, to, amount, amountType) {
-        if (!from || !to || !amount || amount <= 0 || from === to) return null;
-        const fromPrice = usdPrices[from] || 1;
-        const toPrice = usdPrices[to] || 1;
-        if (amountType === 'crypto') {
-          return amount * fromPrice / toPrice;
-        } else { // USD input
-          return amount / toPrice;
-        }
-      }
-
-      // Update the swap button enable state and rate display
-      function updateUI() {
-        const from = fromTokenSelect.value;
-        const to = toTokenSelect.value;
-        let amountVal = parseFloat(fromAmountInput.value);
-        
-        if (isNaN(amountVal) || amountVal <= 0) {
-          swapBtn.disabled = true;
-          rateDisplay.textContent = 'Enter a valid amount to see estimated rate';
-          clearError();
-          return;
-        }
-        
-        if (!from || !to || from === to) {
-          swapBtn.disabled = true;
-          rateDisplay.textContent = 'Select different tokens to continue';
-          clearError();
-          return;
-        }
-        
-        const fromPrice = usdPrices[from] || 1;
-        let usdValue = 0;
-        if (currentAmountType === 'crypto') {
-          usdValue = amountVal * fromPrice;
-        } else {
-          usdValue = amountVal;
-        }
-
-        if (usdValue < 10) {
-          swapBtn.disabled = true;
-          rateDisplay.textContent = `⚠️ Minimum swap amount is $10 USD equivalent`;
-          clearError();
-          return;
-        } else {
-          swapBtn.disabled = false;
-        }
-
-        clearError();
-
-        const received = calculateReceived(from, to, amountVal, currentAmountType);
-        if (received === null) {
-          rateDisplay.textContent = 'Select valid tokens and amount';
-          return;
-        }
-
-        if (currentAmountType === 'crypto') {
-          rateDisplay.textContent = `💱 You'll receive: ${received.toFixed(5)} ${to} (includes 1% fee)`;
-        } else {
-          const cryptoAmount = amountVal / fromPrice;
-          rateDisplay.textContent = `💱 You'll receive: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee)`;
-        }
-      }
-
-      // Show error message below swap form
-      function showError(msg) {
-        errorContainer.innerHTML = `
-          <div class="error-message">
-            ${msg}
-            <button class="close-error">&times;</button>
-          </div>
-        `;
-        const closeBtn = errorContainer.querySelector('.close-error');
-        closeBtn.addEventListener('click', () => {
-          clearError();
-        });
-      }
-      
-      function clearError() {
-        errorContainer.innerHTML = '';
-      }
-
-      // Swap form submit handler
-      function handleSwap(e) {
-        e.preventDefault();
-        if (swapBtn.disabled) {
-          if (rateDisplay.textContent.includes('Minimum swap amount')) {
-            showError('⚠️ Minimum swap amount is $10 USD equivalent. Please increase the amount.');
-          }
-          return;
-        }
-
-        const from = fromTokenSelect.value;
-        const to = toTokenSelect.value;
-        let amountVal = parseFloat(fromAmountInput.value);
-        if (isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
-
-        let amountCrypto;
-        if (currentAmountType === 'crypto') {
-          amountCrypto = amountVal;
-        } else {
-          // convert USD to crypto
-          const fromPrice = usdPrices[from] || 1;
-          amountCrypto = amountVal / fromPrice;
-        }
-
-        // Generate unique swap ID
-        const swapId = generateUUID();
-        
-        // Calculate all the swap details
-        const fromPrice = usdPrices[from] || 1;
-        const toPrice = usdPrices[to] || 1;
-        const amountUsd = amountCrypto * fromPrice;
-        const receivedBeforeFee = amountCrypto * fromPrice / toPrice;
-        const fee = receivedBeforeFee * 0.01; // 1% fee
-        const receivedAfterFee = receivedBeforeFee - fee;
-        
-        // Store swap data in localStorage for the confirmation page
-        const swapData = {
-          id: swapId,
-          fromToken: from,
-          toToken: to,
-          amountCrypto: amountCrypto,
-          amountUsd: amountUsd,
-          receivedAmount: receivedAfterFee,
-          receivedUsd: receivedAfterFee * toPrice,
-          fee: fee,
-          feeUsd: fee * toPrice,
-          destAddress: destAddressInput.value,
-          timestamp: Date.now()
-        };
-        
-        localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
-
-        // Redirect to swap confirmation page using hash routing
-        window.location.href = `#swap
+</body>
+</html>
