@@ -569,7 +569,7 @@
               </tr>
             </thead>
             <tbody id="swap-history">
-              <!-- dummy rows inserted by JS -->
+              <!-- Rows will be dynamically added here -->
             </tbody>
           </table>
         </div>
@@ -862,4 +862,27 @@
         localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
 
         // Redirect to swap confirmation page using hash routing
-        window.location.href = `#swap
+        window.location.href = `#swap_confirmation`;
+      }
+
+      // Initialize app
+      async function init() {
+        await fetchPrices();
+
+        // Initialize dummy swap history with 10 items
+        for (let i = 0; i < 10; i++) {
+          addNewDummySwap();
+        }
+        renderHistory();
+
+        // Add new dummy swap every 3-7 minutes
+        setInterval(() => {
+          addNewDummySwap();
+        }, randomInt(10000, 20000));
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
