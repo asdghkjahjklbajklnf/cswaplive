@@ -1,0 +1,38 @@
+body {
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 50px;
+  background: white;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.drop-zone.drag-over {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.drop-zone p {
+  color: #777;
+  font-size: 1rem;
+}
