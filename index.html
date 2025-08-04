@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple File Drop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>ff.io clone</h1>
+    <p>Drag and drop files here</p>
+    <div class="drop-zone" id="drop-zone">
+      <p>Drop files or click to upload</p>
+      <input type="file" id="file-input" multiple hidden />
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      alert(`You dropped ${files.length} file(s)`);
+    });
+
+    fileInput.addEventListener('change', () => {
+      alert(`You selected ${fileInput.files.length} file(s)`);
+    });
+  </script>
+</body>
+</html>
