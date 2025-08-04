@@ -5,25 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CryptoSwap.live - Cosmetic Crypto Swap</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
     :root {
       --bg-dark: #121214;
       --bg-darker: #0b0b0d;
-      --bg-card: #1a1a1f;
-      --accent: #8e44ad;
+      --accent: #8e44ad; /* purple */
       --accent-hover: #732d91;
-      --accent-light: rgba(142, 68, 173, 0.1);
       --text-light: #e1e1e6;
       --text-muted: #9a8cbf;
       --input-bg: #1e1e22;
       --input-border: #3a2a56;
-      --shadow: 0 0 30px rgba(142, 68, 173, 0.2);
-      --shadow-hover: 0 0 40px rgba(142, 68, 173, 0.3);
-      --success: #27ae60;
-      --warning: #f39c12;
-      --error: #e74c3c;
-      --gradient: linear-gradient(135deg, var(--accent), #9b59b6);
+      --swap-btn-bg: #8e44ad;
+      --swap-btn-bg-hover: #732d91;
+      --shadow: 0 0 15px rgba(142, 68, 173, 0.7);
+      --error-bg: #8b0000;
+      --error-text: #ffbaba;
     }
 
     * {
@@ -33,257 +30,164 @@
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: var(--bg-dark);
+      background-color: var(--bg-dark);
       color: var(--text-light);
       min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    .header {
-      text-align: center;
-      padding: 2rem 1rem;
-      background: linear-gradient(135deg, rgba(142, 68, 173, 0.1), rgba(155, 89, 182, 0.05));
-      border-bottom: 1px solid rgba(142, 68, 173, 0.2);
-    }
-
-    .header h1 {
-      font-size: 3rem;
-      font-weight: 800;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin: 0;
-      text-shadow: 0 0 30px rgba(142, 68, 173, 0.5);
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      margin: 0.5rem 0 0 0;
-      font-weight: 500;
+      user-select: none;
+      padding: 1rem 2rem;
     }
 
     main {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
       display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 3rem;
-      min-height: calc(100vh - 200px);
+      grid-template-columns: 3fr 1fr;
+      gap: 2rem;
+      min-height: 75vh;
     }
 
+    /* LEFT/MAIN: swap + recent swaps stacked vertically */
     .left-main {
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    /* Swap container */
-    .swap-container {
-      background: var(--bg-card);
-      padding: 2.5rem;
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(142, 68, 173, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .swap-container:hover {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
-    .swap-container h2 {
-      margin: 0 0 2rem 0;
-      font-weight: 700;
-      font-size: 2.2rem;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .swap-form {
       display: flex;
       flex-direction: column;
       gap: 2rem;
     }
 
-    .form-group {
+    /* Swap container */
+
+    .swap-container {
+      background: var(--bg-darker);
+      padding: 2rem 2.5rem;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      user-select:none;
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      gap: 1.5rem;
+      max-width: 100%;
     }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+    .swap-container h2 {
+      margin-top: 0;
+      font-weight: 700;
+      font-size: 2rem;
+      color: var(--accent);
+      user-select:none;
+    }
+
+    form.swap-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
     }
 
     label {
       font-weight: 600;
+      margin-bottom: 0.4rem;
       color: var(--text-muted);
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      user-select:none;
     }
 
     select, input[type="number"], input[type="text"] {
       width: 100%;
       background: var(--input-bg);
       border: 2px solid var(--input-border);
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
+      border-radius: 10px;
+      padding: 0.9rem 1.3rem;
       color: var(--text-light);
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 600;
-      transition: all 0.3s ease;
+      transition: border-color 0.3s ease;
       font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.03em;
+      user-select:text;
     }
 
-    select:focus, input:focus {
+    select:focus, input[type="number"]:focus, input[type="text"]:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(142, 68, 173, 0.3);
-      background: rgba(30, 30, 34, 0.8);
+      box-shadow: 0 0 14px var(--accent);
     }
 
-    select option {
-      background: var(--bg-darker);
-      color: var(--text-light);
-      padding: 1rem;
-    }
-
-    .amount-toggle {
-      display: flex;
-      gap: 2rem;
-      background: var(--input-bg);
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      border: 2px solid var(--input-border);
-    }
-
-    .amount-toggle label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--accent);
-      text-transform: none;
-      letter-spacing: normal;
-      font-size: 1rem;
-      transition: color 0.3s ease;
-    }
-
-    .amount-toggle label:hover {
-      color: var(--text-light);
-    }
-
-    input[type="radio"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-    }
-
-    .swap-btn {
-      margin-top: 1rem;
-      padding: 1.4rem 0;
-      background: var(--gradient);
+    button.swap-btn {
+      margin-top: 2rem;
+      padding: 1.1rem 0;
+      background: var(--swap-btn-bg);
       border: none;
-      color: white;
+      color: #fff;
       font-weight: 700;
-      font-size: 1.4rem;
-      border-radius: 16px;
+      font-size: 1.3rem;
+      border-radius: 14px;
       cursor: pointer;
       box-shadow: var(--shadow);
-      transition: all 0.3s ease;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
       font-family: 'Poppins', sans-serif;
       letter-spacing: 0.05em;
-      position: relative;
-      overflow: hidden;
+      user-select:none;
     }
 
-    .swap-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 40px rgba(142, 68, 173, 0.4);
+    button.swap-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      box-shadow: 0 0 20px var(--accent-hover);
     }
 
-    .swap-btn:disabled {
-      background: linear-gradient(135deg, #5c427b, #4a3866);
+    button.swap-btn:disabled {
+      background: #5c427b;
       cursor: not-allowed;
-      transform: none;
       box-shadow: none;
     }
 
-    .swap-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .swap-btn:hover:not(:disabled)::before {
-      left: 100%;
-    }
-
     .rate-display {
-      background: var(--accent-light);
-      border: 1px solid rgba(142, 68, 173, 0.3);
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--text-light);
-      min-height: 3rem;
-      display: flex;
-      align-items: center;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* History container */
-    .history-container {
-      background: var(--bg-card);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(142, 68, 173, 0.1);
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .history-container:hover {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
-    .history-header {
-      background: var(--gradient);
-      padding: 1.5rem 2rem;
-      color: white;
-    }
-
-    .history-header h3 {
-      margin: 0;
+      margin-top: 1.7rem;
       font-weight: 700;
-      font-size: 1.4rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      user-select:none;
+      min-height: 1.4rem;
+      letter-spacing: 0.03em;
     }
 
-    .history-content {
-      padding: 0;
+    /* Toggle for crypto/USD amount input */
+
+    .amount-toggle {
+      display: flex;
+      gap: 1.5rem;
+      font-weight: 600;
+      user-select:none;
+      color: var(--accent);
+    }
+
+    .amount-toggle label {
+      cursor: pointer;
+    }
+
+    input[type="radio"] {
+      margin-right: 0.3rem;
+      cursor: pointer;
+      accent-color: var(--accent);
+      vertical-align: middle;
+    }
+
+    /* Recent swaps below swap */
+
+    .history-container {
+      background: var(--bg-darker);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      color: var(--text-light);
+      user-select:none;
       overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1.5rem 1rem 1.5rem;
+    }
+
+    .history-container h3 {
+      margin: 0 0 1rem 0;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--accent);
+      user-select:none;
     }
 
     table {
@@ -294,624 +198,573 @@
     }
 
     thead th {
-      background: var(--bg-darker);
+      border-bottom: 3px solid var(--accent);
       color: var(--accent);
-      padding: 1rem 1.5rem;
+      padding: 0.75rem 1.2rem;
       text-align: left;
       font-weight: 600;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 2px solid var(--accent);
+      user-select:none;
     }
 
     tbody tr {
-      border-bottom: 1px solid rgba(142, 68, 173, 0.1);
-      transition: background-color 0.3s ease;
+      border-bottom: 1.3px solid #311a5d;
+      transition: background-color 0.25s ease;
     }
 
     tbody tr:hover {
-      background: rgba(142, 68, 173, 0.05);
+      background: #290f4a;
     }
 
     tbody td {
       color: var(--text-light);
-      padding: 1rem 1.5rem;
+      padding: 0.75rem 1.2rem;
+      user-select:text;
       font-weight: 500;
     }
 
-    /* Right sidebar */
-    .right-side {
-      background: var(--bg-card);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(142, 68, 173, 0.1);
-      padding: 2rem;
-      height: fit-content;
-      position: sticky;
-      top: 2rem;
-      transition: all 0.3s ease;
+    /* Scrollbar styles for recent swaps */
+    .history-container table::-webkit-scrollbar {
+      width: 8px;
     }
 
-    .right-side:hover {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(142, 68, 173, 0.2);
+    .history-container table::-webkit-scrollbar-track {
+      background: #0b0b0d;
+    }
+
+    .history-container table::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 6px;
+    }
+
+    /* RIGHT: Sidebar tabs */
+
+    .right-side {
+      background: var(--bg-darker);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      color: var(--text-light);
+      user-select:none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-width: 280px;
+      padding: 1.5rem 1.5rem 2rem 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      font-weight: 400;
     }
 
     .tabs {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      gap: 1rem;
     }
 
     .tab-btn {
       background: transparent;
       border: none;
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 1rem;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.1rem;
       cursor: pointer;
       text-align: left;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      user-select:none;
+      width: 100%;
     }
 
-    .tab-btn:hover {
-      background: var(--accent-light);
-      color: var(--text-light);
-      border-color: rgba(142, 68, 173, 0.2);
-    }
-
+    .tab-btn:hover,
     .tab-btn.active {
-      background: var(--gradient);
-      color: white;
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(142, 68, 173, 0.3);
+      background: var(--accent-hover);
+      color: #fff;
+      box-shadow: 0 0 15px var(--accent-hover);
     }
 
     .tab-content {
-      background: var(--input-bg);
+      background: #1e1e22;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1rem 1rem;
       color: var(--text-light);
       font-weight: 400;
-      line-height: 1.6;
+      font-size: 0.95rem;
+      line-height: 1.4;
       display: none;
-      border: 1px solid rgba(142, 68, 173, 0.1);
+      user-select:text;
+      min-height: 110px;
     }
 
     .tab-content.active {
       display: block;
     }
 
-    /* Error message */
+    /* Error message box */
+
     .error-message {
-      background: linear-gradient(135deg, var(--error), #c0392b);
-      color: white;
+      background: var(--error-bg);
+      color: var(--error-text);
       border-radius: 12px;
-      padding: 1.2rem 1.5rem;
+      padding: 1rem 1.5rem;
       margin-top: 1rem;
-      font-weight: 600;
+      font-weight: 700;
+      position: relative;
+      user-select:none;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-      border: 1px solid rgba(231, 76, 60, 0.3);
+      box-shadow: 0 0 10px var(--error-bg);
     }
 
-    .error-message .close-error {
+    .error-message button.close-error {
       background: transparent;
       border: none;
-      color: white;
-      font-weight: 700;
-      font-size: 1.3rem;
+      color: var(--error-text);
+      font-weight: 900;
+      font-size: 1.2rem;
       cursor: pointer;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.3s ease;
-    }
-
-    .error-message .close-error:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      main {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-      
-      .right-side {
-        position: static;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .header h1 {
-        font-size: 2.2rem;
-      }
-      
-      main {
-        padding: 1rem;
-      }
-      
-      .swap-container, .history-container, .right-side {
-        padding: 1.5rem;
-      }
-      
-      .form-row {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      
-      .amount-toggle {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      
-      table {
-        min-width: auto;
-        font-size: 0.9rem;
-      }
-      
-      thead th, tbody td {
-        padding: 0.8rem 1rem;
-      }
-    }
-
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg-darker);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--gradient);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--accent-hover);
+      line-height: 1;
+      padding: 0 0.4rem 0 0.4rem;
+      user-select:none;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🔄 CryptoSwap.live</h1>
-    <p>Secure & Fast Cryptocurrency Exchange</p>
-  </div>
 
-  <main>
-    <section class="left-main">
-      <section class="swap-container">
-        <h2>⚡ Instant Swap</h2>
-        <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="from-token">From Token</label>
-              <select id="from-token" name="from-token" required>
-                <option value="" disabled selected>Select token</option>
-                <option value="BTC">Bitcoin (BTC)</option>
-                <option value="ETH">Ethereum (ETH)</option>
-                <option value="USDT">Tether (USDT)</option>
-                <option value="BNB">Binance Coin (BNB)</option>
-                <option value="ADA">Cardano (ADA)</option>
-                <option value="SOL">Solana (SOL)</option>
-                <option value="LTC">Litecoin (LTC)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="to-token">To Token</label>
-              <select id="to-token" name="to-token" required>
-                <option value="" disabled selected>Select token</option>
-                <option value="BTC">Bitcoin (BTC)</option>
-                <option value="ETH">Ethereum (ETH)</option>
-                <option value="USDT">Tether (USDT)</option>
-                <option value="BNB">Binance Coin (BNB)</option>
-                <option value="ADA">Cardano (ADA)</option>
-                <option value="SOL">Solana (SOL)</option>
-                <option value="LTC">Litecoin (LTC)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Amount Type</label>
-            <div class="amount-toggle">
-              <label><input type="radio" name="amount-type" value="crypto" checked> 💰 Crypto Amount</label>
-              <label><input type="radio" name="amount-type" value="usd"> 💵 USD Amount</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="from-amount" id="amount-label">Amount (Crypto)</label>
-            <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.00000" required />
-          </div>
-
-          <div class="form-group">
-            <label for="dest-address">Destination Address</label>
-            <input type="text" id="dest-address" name="dest-address" placeholder="Enter destination wallet address" required />
-          </div>
-
-          <button type="submit" class="swap-btn" disabled>🚀 Execute Swap</button>
-
-          <div class="rate-display" id="rate-display">
-            Select tokens and amount to see estimated rate
-          </div>
-
-          <div id="error-container"></div>
-        </form>
-      </section>
-
-      <section class="history-container">
-        <div class="history-header">
-          <h3>📈 Recent Activity</h3>
+<main>
+  <section class="left-main">
+    <section class="swap-container" aria-label="Swap form">
+      <h2>Swap Tokens</h2>
+      <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
+        <div>
+          <label for="from-token">From</label>
+          <select id="from-token" name="from-token" required aria-required="true" aria-label="Select token to swap from">
+            <option value="" disabled selected>Select token</option>
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="USDT">Tether (USDT)</option>
+            <option value="BNB">Binance Coin (BNB)</option>
+            <option value="ADA">Cardano (ADA)</option>
+            <option value="SOL">Solana (SOL)</option>
+            <option value="LTC">Litecoin (LTC)</option>
+          </select>
         </div>
-        <div class="history-content">
-          <table>
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>From</th>
-                <th>Amount</th>
-                <th>To</th>
-                <th>Received</th>
-              </tr>
-            </thead>
-            <tbody id="swap-history">
-              <!-- Rows will be dynamically added here -->
-            </tbody>
-          </table>
+
+        <div class="amount-toggle" role="radiogroup" aria-label="Choose input type for amount">
+          <label><input type="radio" name="amount-type" value="crypto" checked> Crypto Amount</label>
+          <label><input type="radio" name="amount-type" value="usd"> USD Amount</label>
         </div>
-      </section>
+
+        <div>
+          <label for="from-amount" id="amount-label">Amount (Crypto)</label>
+          <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.0" required aria-required="true" />
+        </div>
+
+        <div>
+          <label for="to-token">To</label>
+          <select id="to-token" name="to-token" required aria-required="true" aria-label="Select token to swap to">
+            <option value="" disabled selected>Select token</option>
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="USDT">Tether (USDT)</option>
+            <option value="BNB">Binance Coin (BNB)</option>
+            <option value="ADA">Cardano (ADA)</option>
+            <option value="SOL">Solana (SOL)</option>
+            <option value="LTC">Litecoin (LTC)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="dest-address">Destination Address</label>
+          <input type="text" id="dest-address" name="dest-address" placeholder="Enter destination wallet address" autocomplete="off" required />
+        </div>
+
+        <button type="submit" class="swap-btn" disabled>Swap</button>
+
+        <div class="rate-display" aria-live="polite" aria-atomic="true" id="rate-display">
+          Select tokens and amount to see estimated rate
+        </div>
+
+        <div id="error-container"></div>
+      </form>
     </section>
 
-    <aside class="right-side">
-      <nav class="tabs">
-        <button class="tab-btn active" data-tab="0">🛡️ Why Trust Us?</button>
-        <button class="tab-btn" data-tab="1">💬 Need Support?</button>
-        <button class="tab-btn" data-tab="2">🔒 Is This Safe?</button>
-      </nav>
-      
-      <section class="tab-content active">
-        <p><strong>CryptoSwap.live</strong> is a purely cosmetic demonstration site designed for educational purposes. We never handle real funds or execute actual transactions, ensuring complete safety.</p>
-        <p>We use live market data to provide realistic swap rates, but no real cryptocurrency exchanges occur on this platform.</p>
-      </section>
-      
-      <section class="tab-content">
-        <p>For questions or support regarding this demo platform, please reach out through our official channels.</p>
-        <p><strong>Remember:</strong> This site does not process real payments, store user data, or execute actual cryptocurrency transactions.</p>
-      </section>
-      
-      <section class="tab-content">
-        <p>Since CryptoSwap.live doesn't execute real swaps or require wallet connections, it's completely secure to use.</p>
-        <p><strong>Always exercise caution</strong> with real cryptocurrency services and never share private keys or seed phrases.</p>
-      </section>
-    </aside>
-  </main>
+    <section class="history-container" aria-label="Recent swap history">
+      <h3>Recent Swaps</h3>
+      <table role="table" aria-describedby="history-description">
+        <thead>
+          <tr>
+            <th scope="col">Date & Time</th>
+            <th scope="col">From</th>
+            <th scope="col">Amount</th>
+            <th scope="col">To</th>
+            <th scope="col">Received</th>
+          </tr>
+        </thead>
+        <tbody id="swap-history">
+          <!-- dummy rows inserted by JS -->
+        </tbody>
+      </table>
+      <p id="history-description" class="sr-only">Table showing recent cosmetic token swaps with date, tokens, and amounts</p>
+    </section>
+  </section>
 
-  <script>
-    (() => {
-      const tokenIds = {
-        BTC: 'bitcoin',
-        ETH: 'ethereum',
-        USDT: 'tether',
-        BNB: 'binancecoin',
-        ADA: 'cardano',
-        SOL: 'solana',
-        LTC: 'litecoin'
-      };
+  <aside class="right-side" role="complementary" aria-label="Information tabs">
+    <nav class="tabs" role="tablist" aria-orientation="vertical">
+      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-1" id="tab-btn-1" tabindex="0">Why should you trust us?</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-2" id="tab-btn-2" tabindex="-1">Need support?</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-3" id="tab-btn-3" tabindex="-1">Is this safe?</button>
+    </nav>
+    <section id="tab-1" class="tab-content active" role="tabpanel" aria-labelledby="tab-btn-1">
+      <p>
+        CryptoSwap.live is a purely cosmetic site designed for demo and educational purposes. We never handle real funds or transactions, ensuring your safety. We use live data to provide realistic swap rates but no real swaps occur.
+      </p>
+    </section>
+    <section id="tab-2" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-2" hidden>
+      <p>
+        For questions or support, please reach out to our official channels on Discord or Twitter. This site does not process payments or store user data.
+      </p>
+    </section>
+    <section id="tab-3" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-3" hidden>
+      <p>
+        Since CryptoSwap.live does not execute any real swaps or require wallet connections, it is completely safe and free to use. Always be cautious with real crypto services!
+      </p>
+    </section>
+  </aside>
+</main>
 
-      const usdPrices = {};
-      let swapHistory = [];
+<script>
+  (() => {
+    const tokenIds = {
+      BTC: 'bitcoin',
+      ETH: 'ethereum',
+      USDT: 'tether',
+      BNB: 'binancecoin',
+      ADA: 'cardano',
+      SOL: 'solana',
+      LTC: 'litecoin'
+    };
 
-      // Elements
-      const fromTokenSelect = document.getElementById('from-token');
-      const toTokenSelect = document.getElementById('to-token');
-      const fromAmountInput = document.getElementById('from-amount');
-      const rateDisplay = document.getElementById('rate-display');
-      const swapBtn = document.querySelector('.swap-btn');
-      const historyTbody = document.getElementById('swap-history');
-      const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
-      const amountLabel = document.getElementById('amount-label');
-      const errorContainer = document.getElementById('error-container');
-      const destAddressInput = document.getElementById('dest-address');
-      const tabButtons = document.querySelectorAll('.tab-btn');
-      const tabContents = document.querySelectorAll('.tab-content');
+    const usdPrices = {};
+    let swapHistory = [];
 
-      let currentAmountType = 'crypto';
+    // Elements
+    const fromTokenSelect = document.getElementById('from-token');
+    const toTokenSelect = document.getElementById('to-token');
+    const fromAmountInput = document.getElementById('from-amount');
+    const rateDisplay = document.getElementById('rate-display');
+    const swapBtn = document.querySelector('.swap-btn');
+    const historyTbody = document.getElementById('swap-history');
+    const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
+    const amountLabel = document.getElementById('amount-label');
+    const errorContainer = document.getElementById('error-container');
+    const destAddressInput = document.getElementById('dest-address');
 
-      // Generate UUID for swap ID
-      function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
-      }
+    let currentAmountType = 'crypto';
 
-      // Fetch prices from CoinGecko
-      async function fetchPrices() {
-        try {
-          const ids = Object.values(tokenIds).join(',');
-          const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-          const data = await res.json();
-          for (const [key, id] of Object.entries(tokenIds)) {
-            usdPrices[key] = data[id]?.usd ?? 1;
-          }
-        } catch (e) {
-          console.error('Error fetching prices:', e);
+    // Generate UUID for swap ID
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // Fetch prices from CoinGecko
+    async function fetchPrices() {
+      try {
+        const ids = Object.values(tokenIds).join(',');
+        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+        const data = await res.json();
+        for (const [key, id] of Object.entries(tokenIds)) {
+          usdPrices[key] = data[id]?.usd ?? 1;
         }
+      } catch (e) {
+        console.error('Error fetching prices:', e);
       }
+    }
 
-      // Helper to format date/time
-      function formatDate(date) {
-        return date.toLocaleString();
+    // Helper to format date/time
+    function formatDate(date) {
+      return date.toLocaleString();
+    }
+
+    // Render recent swap history
+    function renderHistory() {
+      historyTbody.innerHTML = '';
+      for (const swap of swapHistory.slice().reverse()) {
+        const tr = document.createElement('tr');
+
+        const tdDate = document.createElement('td');
+        tdDate.textContent = formatDate(swap.date);
+        tr.appendChild(tdDate);
+
+        const tdFrom = document.createElement('td');
+        tdFrom.textContent = swap.fromToken;
+        tr.appendChild(tdFrom);
+
+        const tdAmount = document.createElement('td');
+        tdAmount.textContent = swap.amount.toFixed(5);
+        tr.appendChild(tdAmount);
+
+        const tdTo = document.createElement('td');
+        tdTo.textContent = swap.toToken;
+        tr.appendChild(tdTo);
+
+        const tdReceived = document.createElement('td');
+        tdReceived.textContent = swap.received.toFixed(5);
+        tr.appendChild(tdReceived);
+
+        historyTbody.appendChild(tr);
       }
+    }
 
-      // Render recent swap history
-      function renderHistory() {
-        historyTbody.innerHTML = '';
-        for (const swap of swapHistory.slice().reverse()) {
-          const tr = document.createElement('tr');
+    // Add a new dummy swap every ~3-7 mins (scaled here to 10s-20s)
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function addNewDummySwap() {
+      const tokens = Object.keys(tokenIds);
+      const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
 
-          const tdDate = document.createElement('td');
-          tdDate.textContent = formatDate(swap.date);
-          tr.appendChild(tdDate);
+      const minutesGap = randomInt(5, 20);
+      const secondsGap = randomInt(0, 59);
+      const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
 
-          const tdFrom = document.createElement('td');
-          tdFrom.textContent = swap.fromToken;
-          tr.appendChild(tdFrom);
+      let fromToken = tokens[randomInt(0, tokens.length - 1)];
+      let toToken;
+      do {
+        toToken = tokens[randomInt(0, tokens.length - 1)];
+      } while (toToken === fromToken);
 
-          const tdAmount = document.createElement('td');
-          tdAmount.textContent = swap.amount.toFixed(5);
-          tr.appendChild(tdAmount);
+      let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
 
-          const tdTo = document.createElement('td');
-          tdTo.textContent = swap.toToken;
-          tr.appendChild(tdTo);
+      const fromPrice = usdPrices[fromToken] || 1;
+      const toPrice = usdPrices[toToken] || 1;
+      const received = +(amount * fromPrice / toPrice).toFixed(5);
 
-          const tdReceived = document.createElement('td');
-          tdReceived.textContent = swap.received.toFixed(5);
-          tr.appendChild(tdReceived);
-
-          historyTbody.appendChild(tr);
-        }
-      }
-
-      // Add a new dummy swap every ~3-7 mins (scaled here to 10s-20s)
-      function randomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
-      
-      function addNewDummySwap() {
-        const tokens = Object.keys(tokenIds);
-        const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
-
-        const minutesGap = randomInt(5, 20);
-        const secondsGap = randomInt(0, 59);
-        const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
-
-        let fromToken = tokens[randomInt(0, tokens.length - 1)];
-        let toToken;
-        do {
-          toToken = tokens[randomInt(0, tokens.length - 1)];
-        } while (toToken === fromToken);
-
-        let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
-
-        const fromPrice = usdPrices[fromToken] || 1;
-        const toPrice = usdPrices[toToken] || 1;
-        const received = +(amount * fromPrice / toPrice).toFixed(5);
-
-        swapHistory.push({
-          date: new Date(newTime),
-          fromToken,
-          toToken,
-          amount,
-          received
-        });
-
-        if (swapHistory.length > 20) {
-          swapHistory.shift(); // keep max 20 swaps
-        }
-        renderHistory();
-      }
-
-      // Calculate received tokens for swap UI based on current input & prices
-      function calculateReceived(from, to, amount, amountType) {
-        if (!from || !to || !amount || amount <= 0 || from === to) return null;
-        const fromPrice = usdPrices[from] || 1;
-        const toPrice = usdPrices[to] || 1;
-        if (amountType === 'crypto') {
-          return amount * fromPrice / toPrice;
-        } else { // USD input
-          return amount / toPrice;
-        }
-      }
-
-      // Update the swap button enable state and rate display
-      function updateUI() {
-        const from = fromTokenSelect.value;
-        const to = toTokenSelect.value;
-        let amountVal = parseFloat(fromAmountInput.value);
-        
-        if (isNaN(amountVal) || amountVal <= 0) {
-          swapBtn.disabled = true;
-          rateDisplay.textContent = 'Enter a valid amount to see estimated rate';
-          clearError();
-          return;
-        }
-        
-        if (!from || !to || from === to) {
-          swapBtn.disabled = true;
-          rateDisplay.textContent = 'Select different tokens to continue';
-          clearError();
-          return;
-        }
-        
-        const fromPrice = usdPrices[from] || 1;
-        let usdValue = 0;
-        if (currentAmountType === 'crypto') {
-          usdValue = amountVal * fromPrice;
-        } else {
-          usdValue = amountVal;
-        }
-
-        if (usdValue < 10) {
-          swapBtn.disabled = true;
-          rateDisplay.textContent = `⚠️ Minimum swap amount is $10 USD equivalent`;
-          clearError();
-          return;
-        } else {
-          swapBtn.disabled = false;
-        }
-
-        clearError();
-
-        const received = calculateReceived(from, to, amountVal, currentAmountType);
-        if (received === null) {
-          rateDisplay.textContent = 'Select valid tokens and amount';
-          return;
-        }
-
-        if (currentAmountType === 'crypto') {
-          rateDisplay.textContent = `💱 You'll receive: ${received.toFixed(5)} ${to} (includes 1% fee)`;
-        } else {
-          const cryptoAmount = amountVal / fromPrice;
-          rateDisplay.textContent = `💱 You'll receive: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee)`;
-        }
-      }
-
-      // Show error message below swap form
-      function showError(msg) {
-        errorContainer.innerHTML = `
-          <div class="error-message">
-            ${msg}
-            <button class="close-error">&times;</button>
-          </div>
-        `;
-        const closeBtn = errorContainer.querySelector('.close-error');
-        closeBtn.addEventListener('click', () => {
-          clearError();
-        });
-      }
-      
-      function clearError() {
-        errorContainer.innerHTML = '';
-      }
-
-      // Tab switching functionality
-      function activateTab(index) {
-        tabButtons.forEach((btn, i) => {
-          const selected = i === index;
-          btn.classList.toggle('active', selected);
-          btn.setAttribute('aria-selected', selected);
-          btn.tabIndex = selected ? 0 : -1;
-          tabContents[i].classList.toggle('active', selected);
-          tabContents[i].hidden = !selected;
-        });
-      }
-
-      tabButtons.forEach((btn, i) => {
-        btn.addEventListener('click', () => activateTab(i));
-        btn.addEventListener('keydown', e => {
-          if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            const nextIndex = (i + 1) % tabButtons.length;
-            tabButtons[nextIndex].focus();
-          } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            const prevIndex = (i - 1 + tabButtons.length) % tabButtons.length;
-            tabButtons[prevIndex].focus();
-          }
-        });
+      swapHistory.push({
+        date: new Date(newTime),
+        fromToken,
+        toToken,
+        amount,
+        received
       });
 
-      // Swap form submit handler
-      function handleSwap(e) {
-        e.preventDefault();
-        if (swapBtn.disabled) {
-          if (rateDisplay.textContent.includes('Minimum swap amount')) {
-            showError('⚠️ Minimum swap amount is $10 USD equivalent. Please increase the amount.');
-          }
-          return;
+      if (swapHistory.length > 20) {
+        swapHistory.shift(); // keep max 20 swaps
+      }
+      renderHistory();
+    }
+
+    // Calculate received tokens for swap UI based on current input & prices
+    function calculateReceived(from, to, amount, amountType) {
+      if (!from || !to || !amount || amount <= 0 || from === to) return null;
+      const fromPrice = usdPrices[from] || 1;
+      const toPrice = usdPrices[to] || 1;
+      if (amountType === 'crypto') {
+        return amount * fromPrice / toPrice;
+      } else { // USD input
+        return amount / toPrice;
+      }
+    }
+
+    // Update the swap button enable state and rate display
+    function updateUI() {
+      const from = fromTokenSelect.value;
+      const to = toTokenSelect.value;
+      let amountVal = parseFloat(fromAmountInput.value);
+      if (isNaN(amountVal) || amountVal <= 0) {
+        swapBtn.disabled = true;
+        rateDisplay.textContent = 'Enter a valid amount';
+        clearError();
+        return;
+      }
+      if (!from || !to || from === to) {
+        swapBtn.disabled = true;
+        rateDisplay.textContent = 'Select different tokens';
+        clearError();
+        return;
+      }
+      const fromPrice = usdPrices[from] || 1;
+      let usdValue = 0;
+      if (currentAmountType === 'crypto') {
+        usdValue = amountVal * fromPrice;
+      } else {
+        usdValue = amountVal;
+      }
+
+      if (usdValue < 10) {
+        swapBtn.disabled = true;
+        rateDisplay.textContent = `Minimum swap amount is $10 USD equivalent`;
+        clearError();
+        return;
+      } else {
+        swapBtn.disabled = false;
+      }
+
+      clearError();
+
+      const received = calculateReceived(from, to, amountVal, currentAmountType);
+      if (received === null) {
+        rateDisplay.textContent = 'Select valid tokens and amount';
+        return;
+      }
+
+      if (currentAmountType === 'crypto') {
+        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} (includes 1% fee)`;
+      } else {
+        // USD input - convert back to crypto amount entered
+        const cryptoAmount = amountVal / fromPrice;
+        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee)`;
+      }
+    }
+
+    // Show error message below swap form
+    function showError(msg) {
+      errorContainer.innerHTML = `
+        <div class="error-message" role="alert" aria-live="assertive">
+          ${msg}
+          <button class="close-error" aria-label="Close error message">&times;</button>
+        </div>
+      `;
+      const closeBtn = errorContainer.querySelector('.close-error');
+      closeBtn.addEventListener('click', () => {
+        clearError();
+      });
+    }
+    function clearError() {
+      errorContainer.innerHTML = '';
+    }
+
+    // Swap form submit handler
+    function handleSwap(e) {
+      e.preventDefault();
+      if (swapBtn.disabled) {
+        if (rateDisplay.textContent.includes('Minimum swap amount')) {
+          showError('Minimum swap amount is $10 USD equivalent. Please increase the amount.');
         }
+        return;
+      }
 
-        const from = fromTokenSelect.value;
-        const to = toTokenSelect.value;
-        let amountVal = parseFloat(fromAmountInput.value);
-        if (isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
+      const from = fromTokenSelect.value;
+      const to = toTokenSelect.value;
+      let amountVal = parseFloat(fromAmountInput.value);
+      if (isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
 
-        let amountCrypto;
-        if (currentAmountType === 'crypto') {
-          amountCrypto = amountVal;
-        } else {
-          // convert USD to crypto
-          const fromPrice = usdPrices[from] || 1;
-          amountCrypto = amountVal / fromPrice;
-        }
-
-        // Generate unique swap ID
-        const swapId = generateUUID();
-        
-        // Calculate all the swap details
+      let amountCrypto;
+      if (currentAmountType === 'crypto') {
+        amountCrypto = amountVal;
+      } else {
+        // convert USD to crypto
         const fromPrice = usdPrices[from] || 1;
-        const toPrice = usdPrices[to] || 1;
-        const amountUsd = amountCrypto * fromPrice;
-        const receivedBeforeFee = amountCrypto * fromPrice / toPrice;
-        const fee = receivedBeforeFee * 0.01; // 1% fee
-        const receivedAfterFee = receivedBeforeFee - fee;
-        
-        // Store swap data in localStorage for the confirmation page
-        const swapData = {
-          id: swapId,
-          fromToken: from,
-          toToken: to,
-          amountCrypto: amountCrypto,
-          amountUsd: amountUsd,
-          receivedAmount: receivedAfterFee,
-          receivedUsd: receivedAfterFee * toPrice,
-          fee: fee,
-          feeUsd: fee * toPrice,
-          destAddress: destAddressInput.value,
-          timestamp: Date.now()
-        };
-        
-        localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
-
-        // Redirect to swap confirmation page using hash routing
-        window.location.href = `#swap_confirmation`;
+        amountCrypto = amountVal / fromPrice;
       }
 
-      // Initialize app
-      async function init() {
-        await fetchPrices();
+      // Generate unique swap ID
+      const swapId = generateUUID();
+      
+      // Calculate all the swap details
+      const fromPrice = usdPrices[from] || 1;
+      const toPrice = usdPrices[to] || 1;
+      const amountUsd = amountCrypto * fromPrice;
+      const receivedBeforeFee = amountCrypto * fromPrice / toPrice;
+      const fee = receivedBeforeFee * 0.01; // 1% fee
+      const receivedAfterFee = receivedBeforeFee - fee;
+      
+      // Store swap data in localStorage for the confirmation page
+      const swapData = {
+        id: swapId,
+        fromToken: from,
+        toToken: to,
+        amountCrypto: amountCrypto,
+        amountUsd: amountUsd,
+        receivedAmount: receivedAfterFee,
+        receivedUsd: receivedAfterFee * toPrice,
+        fee: fee,
+        feeUsd: fee * toPrice,
+        destAddress: destAddressInput.value,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
 
-        // Initialize dummy swap history with 10 items
-        for (let i = 0; i < 10; i++) {
-          addNewDummySwap();
+      // Redirect to swap confirmation page
+      window.location.href = `swap.html?id=${swapId}`;
+    }
+
+    // Tab switching logic
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    function activateTab(index) {
+      tabButtons.forEach((btn, i) => {
+        const selected = i === index;
+        btn.classList.toggle('active', selected);
+        btn.setAttribute('aria-selected', selected);
+        btn.tabIndex = selected ? 0 : -1;
+        tabContents[i].classList.toggle('active', selected);
+        tabContents[i].hidden = !selected;
+      });
+    }
+
+    tabButtons.forEach((btn, i) => {
+      btn.addEventListener('click', () => activateTab(i));
+      btn.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const nextIndex = (i + 1) % tabButtons.length;
+          tabButtons[nextIndex].focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prevIndex = (i - 1 + tabButtons.length) % tabButtons.length;
+          tabButtons[prevIndex].focus();
         }
-        renderHistory();
+      });
+    });
 
-        // Add new dummy swap every 3-7 minutes
-        setInterval(() => {
-          addNewDummySwap();
-        }, randomInt(10000, 20000));
+    // Event listeners
+
+    fromTokenSelect.addEventListener('change', updateUI);
+    toTokenSelect.addEventListener('change', updateUI);
+    fromAmountInput.addEventListener('input', () => {
+      if (fromAmountInput.value < 0) fromAmountInput.value = 0;
+      updateUI();
+    });
+    swapBtn.addEventListener('click', handleSwap);
+
+    amountToggleRadios.forEach(radio => {
+      radio.addEventListener('change', e => {
+        currentAmountType = e.target.value;
+        amountLabel.textContent = currentAmountType === 'crypto' ? 'Amount (Crypto)' : 'Amount (USD)';
+        fromAmountInput.value = '';
+        updateUI();
+      });
+    });
+
+    // Initialize app
+
+    async function init() {
+      await fetchPrices();
+
+      // Initialize dummy swap history with 10 items
+      for (let i = 0; i < 10; i++) {
+        addNewDummySwap();
       }
+      renderHistory();
 
-      init();
-    })();
-  </script>
+      // Add new dummy swap every 3-7 minutes (scaled down to 10s-20s here for demo)
+      setInterval(() => {
+        addNewDummySwap();
+      }, randomInt(10000, 20000));
+    }
+
+    init();
+
+  })();
+</script>
+
 </body>
 </html>
