@@ -1,46 +1,548 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple File Drop</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CryptoSwap.live - Cosmetic Crypto Swap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron&family=Roboto:wght@400;700&display=swap');
+
+  :root {
+    --bg-dark: #121214;
+    --bg-darker: #0b0b0d;
+    --accent: #4caf50;
+    --accent-hover: #43a047;
+    --text-light: #e1e1e6;
+    --text-muted: #8a8a8a;
+    --input-bg: #1e1e22;
+    --input-border: #333337;
+    --swap-btn-bg: #4caf50;
+    --swap-btn-bg-hover: #43a047;
+    --modal-bg: rgba(0, 0, 0, 0.85);
+    --shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 1rem 2rem;
+    background: var(--bg-darker);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+  }
+
+  header h1 {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin: 0;
+    color: var(--accent);
+    user-select: none;
+  }
+
+  button#wallet-btn {
+    background: var(--accent);
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 5px;
+    font-weight: 700;
+    color: #121214;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button#wallet-btn:hover {
+    background: var(--accent-hover);
+  }
+
+  main {
+    flex: 1;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .swap-container {
+    background: var(--bg-darker);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    max-width: 500px;
+    margin: 0 auto 3rem auto;
+  }
+
+  .swap-container h2 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+    user-select: none;
+  }
+
+  form.swap-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  label {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    user-select: none;
+  }
+
+  select, input[type="number"] {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    color: var(--text-light);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: border-color 0.3s ease;
+  }
+
+  select:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  button.swap-btn {
+    margin-top: 1rem;
+    padding: 0.85rem 0;
+    background: var(--swap-btn-bg);
+    border: none;
+    color: #121214;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: background-color 0.3s ease;
+  }
+
+  button.swap-btn:hover:not(:disabled) {
+    background: var(--swap-btn-bg-hover);
+  }
+
+  button.swap-btn:disabled {
+    background: #555555;
+    cursor: not-allowed;
+  }
+
+  .rate-display {
+    margin-top: 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-muted);
+    user-select: none;
+  }
+
+  .history-container {
+    max-width: 900px;
+    margin: 0 auto 3rem auto;
+    padding: 1rem 2rem;
+    background: var(--bg-darker);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    color: var(--text-light);
+  }
+
+  .history-container h3 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+    user-select: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    font-weight: 500;
+  }
+
+  thead th {
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #2e2e33;
+  }
+
+  tbody tr:hover {
+    background: #222225;
+  }
+
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background: var(--modal-bg);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--bg-darker);
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    box-shadow: var(--shadow);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    color: var(--text-light);
+  }
+
+  .modal-content h4 {
+    margin-top: 0;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+    user-select: none;
+  }
+
+  .wallet-address {
+    font-family: monospace;
+    background: #232323;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-wrap: break-word;
+    user-select: text;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-close-btn {
+    background: var(--accent);
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #121214;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .modal-close-btn:hover {
+    background: var(--accent-hover);
+  }
+
+  @media (max-width: 600px) {
+    .swap-container, .history-container {
+      padding: 1rem 1.5rem;
+    }
+    header {
+      padding: 1rem;
+    }
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>ff.io clone</h1>
-    <p>Drag and drop files here</p>
-    <div class="drop-zone" id="drop-zone">
-      <p>Drop files or click to upload</p>
-      <input type="file" id="file-input" multiple hidden />
+
+<header>
+  <h1>CryptoSwap.live</h1>
+  <button id="wallet-btn">Connect Wallet</button>
+</header>
+
+<main>
+  <section class="swap-container" aria-label="Swap form">
+    <h2>Swap Tokens</h2>
+    <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
+      <div>
+        <label for="from-token">From</label>
+        <select id="from-token" name="from-token" required aria-required="true" aria-label="Select token to swap from">
+          <option value="" disabled selected>Select token</option>
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="USDT">Tether (USDT)</option>
+          <option value="BNB">Binance Coin (BNB)</option>
+          <option value="ADA">Cardano (ADA)</option>
+          <option value="SOL">Solana (SOL)</option>
+          <option value="LTC">Litecoin (LTC)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="from-amount">Amount</label>
+        <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.0" required aria-required="true" />
+      </div>
+
+      <div>
+        <label for="to-token">To</label>
+        <select id="to-token" name="to-token" required aria-required="true" aria-label="Select token to swap to">
+          <option value="" disabled selected>Select token</option>
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="USDT">Tether (USDT)</option>
+          <option value="BNB">Binance Coin (BNB)</option>
+          <option value="ADA">Cardano (ADA)</option>
+          <option value="SOL">Solana (SOL)</option>
+          <option value="LTC">Litecoin (LTC)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="swap-btn" disabled>Swap</button>
+
+      <div class="rate-display" aria-live="polite" aria-atomic="true" id="rate-display">
+        Select tokens and amount to see estimated rate
+      </div>
+    </form>
+  </section>
+
+  <section class="history-container" aria-label="Recent swap history">
+    <h3>Recent Swaps</h3>
+    <table role="table" aria-describedby="history-description">
+      <thead>
+        <tr>
+          <th scope="col">Date & Time</th>
+          <th scope="col">From</th>
+          <th scope="col">Amount</th>
+          <th scope="col">To</th>
+          <th scope="col">Received</th>
+        </tr>
+      </thead>
+      <tbody id="swap-history">
+        <!-- dummy rows inserted by JS -->
+      </tbody>
+    </table>
+    <p id="history-description" class="sr-only">Table showing recent cosmetic token swaps with date, tokens, and amounts</p>
+  </section>
+</main>
+
+<!-- Wallet Modal -->
+<div class="modal" id="wallet-modal" role="dialog" aria-modal="true" aria-labelledby="wallet-modal-title" tabindex="-1">
+  <div class="modal-content">
+    <h4 id="wallet-modal-title">Connected Wallet</h4>
+    <div class="wallet-address" id="wallet-address" tabindex="0" aria-label="Wallet address">
+      0x1234...ABCD5678EF90
     </div>
+    <button class="modal-close-btn" id="wallet-close-btn" aria-label="Close wallet modal">Close</button>
   </div>
+</div>
 
-  <script>
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
+<script>
+  (() => {
+    const walletBtn = document.getElementById('wallet-btn');
+    const walletModal = document.getElementById('wallet-modal');
+    const walletCloseBtn = document.getElementById('wallet-close-btn');
+    const walletAddressEl = document.getElementById('wallet-address');
 
-    dropZone.addEventListener('click', () => fileInput.click());
+    const fromTokenSelect = document.getElementById('from-token');
+    const toTokenSelect = document.getElementById('to-token');
+    const fromAmountInput = document.getElementById('from-amount');
+    const swapBtn = document.querySelector('button.swap-btn');
+    const rateDisplay = document.getElementById('rate-display');
 
-    dropZone.addEventListener('dragover', (e) => {
+    // Dummy static rates (mocked exchange rates from -> to)
+    // Rates are how many To tokens = 1 From token (simplified for demo)
+    const rates = {
+      BTC: { ETH: 14.5, USDT: 27000, BNB: 400, ADA: 95000, SOL: 470, LTC: 180 },
+      ETH: { BTC: 0.068, USDT: 1850, BNB: 27.5, ADA: 6500, SOL: 32, LTC: 12.5 },
+      USDT: { BTC: 0.000037, ETH: 0.00054, BNB: 0.015, ADA: 3.5, SOL: 0.017, LTC: 0.0067 },
+      BNB: { BTC: 0.0025, ETH: 0.036, USDT: 65, ADA: 220, SOL: 1.15, LTC: 0.45 },
+      ADA: { BTC: 0.0000105, ETH: 0.00015, USDT: 0.28, BNB: 0.0045, SOL: 0.0052, LTC: 0.002 },
+      SOL: { BTC: 0.0021, ETH: 0.031, USDT: 58, BNB: 0.87, ADA: 190, LTC: 0.39 },
+      LTC: { BTC: 0.0055, ETH: 0.08, USDT: 150, BNB: 2.1, ADA: 460, SOL: 2.6 }
+    };
+
+    // Enable swap button only when valid input & tokens selected & from != to
+    function validateForm() {
+      const fromToken = fromTokenSelect.value;
+      const toToken = toTokenSelect.value;
+      const amount = parseFloat(fromAmountInput.value);
+
+      const valid = fromToken && toToken && fromToken !== toToken && amount > 0;
+      swapBtn.disabled = !valid;
+
+      if (!valid) {
+        rateDisplay.textContent = 'Select tokens and amount to see estimated rate';
+        return false;
+      }
+      return true;
+    }
+
+    // Calculate and display mock estimated amount received
+    function updateRate() {
+      if (!validateForm()) return;
+
+      const fromToken = fromTokenSelect.value;
+      const toToken = toTokenSelect.value;
+      const amount = parseFloat(fromAmountInput.value);
+
+      // Lookup rate or fallback to 1 if missing
+      let rate = 1;
+      if (rates[fromToken] && rates[fromToken][toToken]) {
+        rate = rates[fromToken][toToken];
+      }
+
+      const received = amount * rate;
+      rateDisplay.textContent = `Estimated: ${received.toFixed(6)} ${toToken} (Rate: 1 ${fromToken} ≈ ${rate} ${toToken})`;
+    }
+
+    // Handle swap form submit (cosmetic only)
+    function handleSwapSubmit(e) {
       e.preventDefault();
-      dropZone.classList.add('drag-over');
+
+      if (!validateForm()) return;
+
+      const fromToken = fromTokenSelect.value;
+      const toToken = toTokenSelect.value;
+      const amount = parseFloat(fromAmountInput.value);
+
+      let rate = 1;
+      if (rates[fromToken] && rates[fromToken][toToken]) {
+        rate = rates[fromToken][toToken];
+      }
+      const received = amount * rate;
+
+      // Add to dummy history
+      addToHistory({
+        date: new Date(),
+        fromToken,
+        toToken,
+        amount,
+        received
+      });
+
+      // Reset form
+      fromTokenSelect.value = "";
+      toTokenSelect.value = "";
+      fromAmountInput.value = "";
+      swapBtn.disabled = true;
+      rateDisplay.textContent = 'Select tokens and amount to see estimated rate';
+    }
+
+    // Format date/time as YYYY-MM-DD HH:mm:ss
+    function formatDate(date) {
+      const pad = n => n.toString().padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ` +
+             `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    // Dummy swap history array
+    let swapHistory = [
+      {date: new Date(Date.now()-600000), fromToken:'ETH', toToken:'BTC', amount:1.2, received:0.082},
+      {date: new Date(Date.now()-1200000), fromToken:'USDT', toToken:'ADA', amount:500, received:1750},
+      {date: new Date(Date.now()-1800000), fromToken:'LTC', toToken:'ETH', amount:3, received:0.24},
+      {date: new Date(Date.now()-2400000), fromToken:'BNB', toToken:'SOL', amount:7, received:8.05},
+      {date: new Date(Date.now()-3000000), fromToken:'BTC', toToken:'USDT', amount:0.05, received:1350}
+    ];
+
+    const historyTbody = document.getElementById('swap-history');
+
+    function renderHistory() {
+      historyTbody.innerHTML = '';
+      // Show last 10
+      const last10 = swapHistory.slice(-10).reverse();
+      for (const swap of last10) {
+        const tr = document.createElement('tr');
+
+        const tdDate = document.createElement('td');
+        tdDate.textContent = formatDate(swap.date);
+        tr.appendChild(tdDate);
+
+        const tdFrom = document.createElement('td');
+        tdFrom.textContent = swap.fromToken;
+        tr.appendChild(tdFrom);
+
+        const tdAmount = document.createElement('td');
+        tdAmount.textContent = swap.amount.toFixed(6);
+        tr.appendChild(tdAmount);
+
+        const tdTo = document.createElement('td');
+        tdTo.textContent = swap.toToken;
+        tr.appendChild(tdTo);
+
+        const tdReceived = document.createElement('td');
+        tdReceived.textContent = swap.received.toFixed(6);
+        tr.appendChild(tdReceived);
+
+        historyTbody.appendChild(tr);
+      }
+    }
+
+    // Add new swap to history and rerender
+    function addToHistory(swap) {
+      swapHistory.push(swap);
+      renderHistory();
+    }
+
+    // Wallet modal handling - just cosmetic
+    let walletConnected = false;
+    const fakeWalletAddress = '0x1234...ABCD5678EF90';
+
+    walletBtn.addEventListener('click', () => {
+      if (!walletConnected) {
+        // "Connect" wallet (fake)
+        walletAddressEl.textContent = fakeWalletAddress;
+        walletModal.classList.add('active');
+        walletConnected = true;
+        walletBtn.textContent = 'Wallet Connected';
+        walletBtn.disabled = true;
+      }
     });
 
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('drag-over');
+    walletCloseBtn.addEventListener('click', () => {
+      walletModal.classList.remove('active');
     });
 
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('drag-over');
-      const files = e.dataTransfer.files;
-      alert(`You dropped ${files.length} file(s)`);
+    // Close modal on outside click or ESC key
+    walletModal.addEventListener('click', e => {
+      if (e.target === walletModal) walletModal.classList.remove('active');
     });
 
-    fileInput.addEventListener('change', () => {
-      alert(`You selected ${fileInput.files.length} file(s)`);
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && walletModal.classList.contains('active')) {
+        walletModal.classList.remove('active');
+      }
     });
-  </script>
+
+    // Events for inputs to update rate and validate form
+    [fromTokenSelect, toTokenSelect, fromAmountInput].forEach(el => {
+      el.addEventListener('input', () => {
+        updateRate();
+      });
+    });
+
+    // Swap form submit
+    document.getElementById('swap-form').addEventListener('submit', handleSwapSubmit);
+
+    // Initial render
+    renderHistory();
+  })();
+</script>
+
 </body>
 </html>
