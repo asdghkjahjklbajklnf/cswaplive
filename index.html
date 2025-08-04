@@ -626,6 +626,8 @@
       const amountLabel = document.getElementById('amount-label');
       const errorContainer = document.getElementById('error-container');
       const destAddressInput = document.getElementById('dest-address');
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
 
       let currentAmountType = 'crypto';
 
@@ -808,6 +810,33 @@
       function clearError() {
         errorContainer.innerHTML = '';
       }
+
+      // Tab switching functionality
+      function activateTab(index) {
+        tabButtons.forEach((btn, i) => {
+          const selected = i === index;
+          btn.classList.toggle('active', selected);
+          btn.setAttribute('aria-selected', selected);
+          btn.tabIndex = selected ? 0 : -1;
+          tabContents[i].classList.toggle('active', selected);
+          tabContents[i].hidden = !selected;
+        });
+      }
+
+      tabButtons.forEach((btn, i) => {
+        btn.addEventListener('click', () => activateTab(i));
+        btn.addEventListener('keydown', e => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const nextIndex = (i + 1) % tabButtons.length;
+            tabButtons[nextIndex].focus();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prevIndex = (i - 1 + tabButtons.length) % tabButtons.length;
+            tabButtons[prevIndex].focus();
+          }
+        });
+      });
 
       // Swap form submit handler
       function handleSwap(e) {
