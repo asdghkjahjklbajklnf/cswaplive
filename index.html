@@ -30,48 +30,24 @@
       font-family: 'Poppins', sans-serif;
       background-color: var(--bg-dark);
       color: var(--text-light);
-      display: flex;
-      flex-direction: column;
       min-height: 100vh;
       user-select: none;
-    }
-
-    header {
-      padding: 1.5rem 2rem;
-      background: var(--bg-darker);
-      box-shadow: var(--shadow);
-      text-align: center;
-      user-select:none;
-    }
-
-    header h1 {
-      font-weight: 700;
-      font-size: 2.3rem;
-      letter-spacing: 3px;
-      margin: 0;
-      color: var(--accent);
-      user-select:none;
-      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 2rem;
     }
 
     main {
       flex: 1;
-      max-width: 1100px;
-      margin: 2rem auto 4rem auto;
-      padding: 0 1rem;
-      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.5fr 2fr 1fr;
       gap: 2rem;
+      min-height: 70vh;
     }
 
-    /* LEFT SIDE: Recent swaps + swap container */
-
-    .left-side {
-      flex: 1.1;
-      display: flex;
-      flex-direction: column;
-      gap: 3rem;
-      min-width: 0;
-    }
+    /* LEFT: Recent swaps */
 
     .history-container {
       background: var(--bg-darker);
@@ -80,10 +56,13 @@
       color: var(--text-light);
       user-select:none;
       overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1.5rem 1rem 1.5rem;
     }
 
     .history-container h3 {
-      margin: 1.5rem 1.5rem 1rem 1.5rem;
+      margin: 0 0 1rem 0;
       font-weight: 700;
       font-size: 1.5rem;
       color: var(--accent);
@@ -94,7 +73,7 @@
       width: 100%;
       border-collapse: collapse;
       font-variant-numeric: tabular-nums;
-      min-width: 520px;
+      min-width: 480px;
     }
 
     thead th {
@@ -122,22 +101,24 @@
       font-weight: 500;
     }
 
-    /* Swap container */
+    /* CENTER: Swap container */
 
     .swap-container {
       background: var(--bg-darker);
-      padding: 2.2rem 2.5rem;
+      padding: 2rem 2.5rem;
       border-radius: 14px;
       box-shadow: var(--shadow);
-      max-width: 520px;
       user-select:none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 100%;
     }
 
     .swap-container h2 {
       margin-top: 0;
       font-weight: 700;
-      font-size: 1.8rem;
-      margin-bottom: 2rem;
+      font-size: 2rem;
       color: var(--accent);
       user-select:none;
     }
@@ -214,10 +195,30 @@
       letter-spacing: 0.03em;
     }
 
-    /* RIGHT SIDE: Tabs menu */
+    /* Toggle for crypto/USD amount input */
+
+    .amount-toggle {
+      display: flex;
+      gap: 1.5rem;
+      font-weight: 600;
+      user-select:none;
+      color: var(--accent);
+    }
+
+    .amount-toggle label {
+      cursor: pointer;
+    }
+
+    input[type="radio"] {
+      margin-right: 0.3rem;
+      cursor: pointer;
+      accent-color: var(--accent);
+      vertical-align: middle;
+    }
+
+    /* RIGHT: Sidebar tabs */
 
     .right-side {
-      flex: 0.6;
       background: var(--bg-darker);
       border-radius: 14px;
       box-shadow: var(--shadow);
@@ -228,6 +229,9 @@
       gap: 1rem;
       min-width: 280px;
       padding: 1.5rem 1.5rem 2rem 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      font-weight: 400;
     }
 
     .tabs {
@@ -275,14 +279,7 @@
       display: block;
     }
 
-    /* Scroll for recent swaps if needed */
-    .history-container table {
-      max-height: 320px;
-      display: block;
-      overflow-y: auto;
-    }
-
-    /* Scrollbar styles */
+    /* Scrollbar styles for recent swaps */
     .history-container table::-webkit-scrollbar {
       width: 8px;
     }
@@ -297,17 +294,14 @@
     }
 
     /* Responsive */
-    @media (max-width: 900px) {
+
+    @media (max-width: 1100px) {
       main {
+        display: flex;
         flex-direction: column;
-        margin: 1rem auto 3rem auto;
-      }
-      .left-side, .right-side {
-        max-width: 100%;
+        gap: 1.5rem;
       }
       .right-side {
-        padding: 1rem;
-        margin-top: 1.5rem;
         min-width: auto;
       }
       .history-container table {
@@ -319,76 +313,78 @@
 </head>
 <body>
 
-<header>
-  <h1>CryptoSwap.live</h1>
-</header>
-
 <main>
-  <section class="left-side">
-    <section class="history-container" aria-label="Recent swap history">
-      <h3>Recent Swaps</h3>
-      <table role="table" aria-describedby="history-description">
-        <thead>
-          <tr>
-            <th scope="col">Date & Time</th>
-            <th scope="col">From</th>
-            <th scope="col">Amount</th>
-            <th scope="col">To</th>
-            <th scope="col">Received</th>
-          </tr>
-        </thead>
-        <tbody id="swap-history">
-          <!-- dummy rows inserted by JS -->
-        </tbody>
-      </table>
-      <p id="history-description" class="sr-only">Table showing recent cosmetic token swaps with date, tokens, and amounts</p>
-    </section>
-
-    <section class="swap-container" aria-label="Swap form">
-      <h2>Swap Tokens</h2>
-      <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
-        <div>
-          <label for="from-token">From</label>
-          <select id="from-token" name="from-token" required aria-required="true" aria-label="Select token to swap from">
-            <option value="" disabled selected>Select token</option>
-            <option value="BTC">Bitcoin (BTC)</option>
-            <option value="ETH">Ethereum (ETH)</option>
-            <option value="USDT">Tether (USDT)</option>
-            <option value="BNB">Binance Coin (BNB)</option>
-            <option value="ADA">Cardano (ADA)</option>
-            <option value="SOL">Solana (SOL)</option>
-            <option value="LTC">Litecoin (LTC)</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="from-amount">Amount</label>
-          <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.0" required aria-required="true" />
-        </div>
-
-        <div>
-          <label for="to-token">To</label>
-          <select id="to-token" name="to-token" required aria-required="true" aria-label="Select token to swap to">
-            <option value="" disabled selected>Select token</option>
-            <option value="BTC">Bitcoin (BTC)</option>
-            <option value="ETH">Ethereum (ETH)</option>
-            <option value="USDT">Tether (USDT)</option>
-            <option value="BNB">Binance Coin (BNB)</option>
-            <option value="ADA">Cardano (ADA)</option>
-            <option value="SOL">Solana (SOL)</option>
-            <option value="LTC">Litecoin (LTC)</option>
-          </select>
-        </div>
-
-        <button type="submit" class="swap-btn" disabled>Swap</button>
-
-        <div class="rate-display" aria-live="polite" aria-atomic="true" id="rate-display">
-          Select tokens and amount to see estimated rate
-        </div>
-      </form>
-    </section>
+  <!-- Left: Recent swaps -->
+  <section class="history-container" aria-label="Recent swap history">
+    <h3>Recent Swaps</h3>
+    <table role="table" aria-describedby="history-description">
+      <thead>
+        <tr>
+          <th scope="col">Date & Time</th>
+          <th scope="col">From</th>
+          <th scope="col">Amount</th>
+          <th scope="col">To</th>
+          <th scope="col">Received</th>
+        </tr>
+      </thead>
+      <tbody id="swap-history">
+        <!-- dummy rows inserted by JS -->
+      </tbody>
+    </table>
+    <p id="history-description" class="sr-only">Table showing recent cosmetic token swaps with date, tokens, and amounts</p>
   </section>
 
+  <!-- Center: Swap UI -->
+  <section class="swap-container" aria-label="Swap form">
+    <h2>Swap Tokens</h2>
+    <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
+      <div>
+        <label for="from-token">From</label>
+        <select id="from-token" name="from-token" required aria-required="true" aria-label="Select token to swap from">
+          <option value="" disabled selected>Select token</option>
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="USDT">Tether (USDT)</option>
+          <option value="BNB">Binance Coin (BNB)</option>
+          <option value="ADA">Cardano (ADA)</option>
+          <option value="SOL">Solana (SOL)</option>
+          <option value="LTC">Litecoin (LTC)</option>
+        </select>
+      </div>
+
+      <div class="amount-toggle" role="radiogroup" aria-label="Choose input type for amount">
+        <label><input type="radio" name="amount-type" value="crypto" checked> Crypto Amount</label>
+        <label><input type="radio" name="amount-type" value="usd"> USD Amount</label>
+      </div>
+
+      <div>
+        <label for="from-amount" id="amount-label">Amount</label>
+        <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.0" required aria-required="true" />
+      </div>
+
+      <div>
+        <label for="to-token">To</label>
+        <select id="to-token" name="to-token" required aria-required="true" aria-label="Select token to swap to">
+          <option value="" disabled selected>Select token</option>
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="USDT">Tether (USDT)</option>
+          <option value="BNB">Binance Coin (BNB)</option>
+          <option value="ADA">Cardano (ADA)</option>
+          <option value="SOL">Solana (SOL)</option>
+          <option value="LTC">Litecoin (LTC)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="swap-btn" disabled>Swap</button>
+
+      <div class="rate-display" aria-live="polite" aria-atomic="true" id="rate-display">
+        Select tokens and amount to see estimated rate
+      </div>
+    </form>
+  </section>
+
+  <!-- Right: Sidebar tabs -->
   <aside class="right-side" role="complementary" aria-label="Information tabs">
     <nav class="tabs" role="tablist" aria-orientation="vertical">
       <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-1" id="tab-btn-1" tabindex="0">Why should you trust us?</button>
@@ -411,6 +407,7 @@
       </p>
     </section>
   </aside>
+</main>
 
 <script>
   (() => {
@@ -420,6 +417,8 @@
     const swapBtn = document.querySelector('button.swap-btn');
     const rateDisplay = document.getElementById('rate-display');
     const historyTbody = document.getElementById('swap-history');
+    const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
+    const amountLabel = document.getElementById('amount-label');
 
     const tokenIds = {
       BTC: 'bitcoin',
@@ -432,6 +431,7 @@
     };
 
     let usdPrices = {};
+    let currentAmountType = 'crypto'; // or 'usd'
 
     // Helpers
     function randomInt(min, max) {
@@ -442,6 +442,30 @@
       const pad = n => n.toString().padStart(2, '0');
       return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ` +
              `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    // Fetch live prices from CoinGecko
+    async function fetchPrices() {
+      try {
+        const ids = Object.values(tokenIds).join(',');
+        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+        const data = await res.json();
+        usdPrices = {};
+        for (const [key, val] of Object.entries(tokenIds)) {
+          usdPrices[key] = data[val]?.usd || 1;
+        }
+      } catch {
+        // fallback in case of error
+        usdPrices = {
+          BTC: 30000,
+          ETH: 2000,
+          USDT: 1,
+          BNB: 250,
+          ADA: 1.2,
+          SOL: 40,
+          LTC: 100
+        };
+      }
     }
 
     // Initialize dummy swaps spaced randomly 5-20 min apart with random seconds
@@ -514,4 +538,188 @@
       const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length-1].date.getTime() : Date.now();
 
       const minutesGap = randomInt(5,20);
-      const secondsGap
+      const secondsGap = randomInt(0,59);
+      const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
+
+      let fromToken = tokens[randomInt(0, tokens.length -1)];
+      let toToken;
+      do {
+        toToken = tokens[randomInt(0, tokens.length -1)];
+      } while(toToken === fromToken);
+
+      let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
+
+      const fromPrice = usdPrices[fromToken] || 1;
+      const toPrice = usdPrices[toToken] || 1;
+      const received = +(amount * fromPrice / toPrice).toFixed(5);
+
+      swapHistory.push({
+        date: new Date(newTime),
+        fromToken,
+        toToken,
+        amount,
+        received
+      });
+
+      if(swapHistory.length > 20) {
+        swapHistory.shift(); // keep max 20 swaps
+      }
+      renderHistory();
+    }
+
+    // Calculate received tokens for swap UI based on current input & prices
+    function calculateReceived(from, to, amount, amountType) {
+      if (!from || !to || !amount || amount <= 0 || from === to) return null;
+      const fromPrice = usdPrices[from] || 1;
+      const toPrice = usdPrices[to] || 1;
+      if(amountType === 'crypto') {
+        return amount * fromPrice / toPrice;
+      } else { // USD input
+        return amount / toPrice;
+      }
+    }
+
+    // Update the swap button enable state and rate display
+    function updateUI() {
+      const from = fromTokenSelect.value;
+      const to = toTokenSelect.value;
+      let amountVal = parseFloat(fromAmountInput.value);
+      if(isNaN(amountVal) || amountVal <= 0) {
+        swapBtn.disabled = true;
+        rateDisplay.textContent = 'Enter a valid amount';
+        return;
+      }
+      if(!from || !to || from === to) {
+        swapBtn.disabled = true;
+        rateDisplay.textContent = 'Select different tokens';
+        return;
+      }
+      swapBtn.disabled = false;
+
+      const received = calculateReceived(from, to, amountVal, currentAmountType);
+      if(received === null) {
+        rateDisplay.textContent = 'Select valid tokens and amount';
+        return;
+      }
+
+      if(currentAmountType === 'crypto') {
+        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to}`;
+      } else {
+        // USD input - convert back to crypto amount entered
+        const fromPrice = usdPrices[from] || 1;
+        const cryptoAmount = amountVal / fromPrice;
+        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from})`;
+      }
+    }
+
+    // Swap form submit handler - just add to recent swaps, reset inputs
+    function handleSwap(e) {
+      e.preventDefault();
+      if(swapBtn.disabled) return;
+
+      const from = fromTokenSelect.value;
+      const to = toTokenSelect.value;
+      let amountVal = parseFloat(fromAmountInput.value);
+      if(isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
+
+      let amountCrypto;
+      if(currentAmountType === 'crypto') {
+        amountCrypto = amountVal;
+      } else {
+        // convert USD to crypto
+        const fromPrice = usdPrices[from] || 1;
+        amountCrypto = amountVal / fromPrice;
+      }
+
+      const fromPrice = usdPrices[from] || 1;
+      const toPrice = usdPrices[to] || 1;
+      const received = +(amountCrypto * fromPrice / toPrice).toFixed(5);
+
+      swapHistory.push({
+        date: new Date(),
+        fromToken: from,
+        toToken: to,
+        amount: amountCrypto,
+        received
+      });
+      if(swapHistory.length > 20) {
+        swapHistory.shift();
+      }
+      renderHistory();
+
+      // Reset form
+      fromAmountInput.value = '';
+      swapBtn.disabled = true;
+      rateDisplay.textContent = 'Select tokens and amount to see estimated rate';
+    }
+
+    // Tab switching logic
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    function activateTab(index) {
+      tabButtons.forEach((btn, i) => {
+        const selected = i === index;
+        btn.classList.toggle('active', selected);
+        btn.setAttribute('aria-selected', selected);
+        btn.tabIndex = selected ? 0 : -1;
+        tabContents[i].classList.toggle('active', selected);
+        tabContents[i].hidden = !selected;
+      });
+    }
+
+    tabButtons.forEach((btn, i) => {
+      btn.addEventListener('click', () => activateTab(i));
+      btn.addEventListener('keydown', e => {
+        if(e.key === 'ArrowDown') {
+          e.preventDefault();
+          const nextIndex = (i + 1) % tabButtons.length;
+          tabButtons[nextIndex].focus();
+        } else if(e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prevIndex = (i - 1 + tabButtons.length) % tabButtons.length;
+          tabButtons[prevIndex].focus();
+        }
+      });
+    });
+
+    // Event listeners
+
+    fromTokenSelect.addEventListener('change', updateUI);
+    toTokenSelect.addEventListener('change', updateUI);
+    fromAmountInput.addEventListener('input', () => {
+      // Filter input to positive number only
+      if(fromAmountInput.value < 0) fromAmountInput.value = 0;
+      updateUI();
+    });
+    swapBtn.addEventListener('click', handleSwap);
+
+    amountToggleRadios.forEach(radio => {
+      radio.addEventListener('change', e => {
+        currentAmountType = e.target.value;
+        amountLabel.textContent = currentAmountType === 'crypto' ? 'Amount (Crypto)' : 'Amount (USD)';
+        fromAmountInput.value = '';
+        updateUI();
+      });
+    });
+
+    // Initialize app
+
+    async function init() {
+      await fetchPrices();
+      initDummySwaps();
+      renderHistory();
+
+      // Add new dummy swap every 3-7 minutes (scaled down to 10s-20s here for demo)
+      setInterval(() => {
+        addNewDummySwap();
+      }, randomInt(10000, 20000));
+    }
+
+    init();
+  })();
+</script>
+
+</body>
+</html>
