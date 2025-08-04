@@ -705,8 +705,8 @@
       
       localStorage.setItem(`swap_${swapId}`, JSON.stringify(swapData));
 
-      // Redirect to swap confirmation page
-      window.location.href = `swap.html?id=${swapId}`;
+      // Redirect to swap confirmation page using hash routing
+      window.location.href = `#swap/${swapId}`;
     }
 
     // Tab switching logic
