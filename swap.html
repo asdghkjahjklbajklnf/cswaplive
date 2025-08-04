@@ -46,6 +46,17 @@
       min-height: 80vh;
     }
 
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+    }
+
     .header {
       grid-column: 1 / -1;
       text-align: center;
@@ -236,8 +247,6 @@
       border: 2px solid var(--warning);
       border-radius: 12px;
       padding: 1.5rem;
-      margin-top: 2rem;
-      grid-column: 1 / -1;
     }
 
     .warning-box h4 {
@@ -256,6 +265,7 @@
     .warning-box li {
       margin: 0.5rem 0;
       font-weight: 500;
+      font-size: 0.9rem;
     }
 
     @media (max-width: 768px) {
@@ -281,6 +291,10 @@
         width: 150px;
         height: 150px;
       }
+
+      .left-column, .right-column {
+        order: initial;
+      }
     }
   </style>
 </head>
@@ -290,61 +304,65 @@
   </div>
 
   <div class="container">
-    <div class="timer-container">
-      <div class="timer-label">Transaction expires in:</div>
-      <div class="timer" id="timer">59:59</div>
-      <div class="status" id="status">⏳ Waiting for payment...</div>
-    </div>
-
-    <div class="swap-details">
-      <div class="detail-section">
-        <h3>📊 Swap Details</h3>
-        <div class="detail-row">
-          <span class="detail-label">From:</span>
-          <span class="detail-value">
-            <span class="crypto-amount" id="from-amount">0.00000 BTC</span><br>
-            <span class="usd-amount" id="from-usd">($0.00)</span>
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">To:</span>
-          <span class="detail-value">
-            <span class="crypto-amount" id="to-amount">0.00000 ETH</span><br>
-            <span class="usd-amount" id="to-usd">($0.00)</span>
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Service Fee (1%):</span>
-          <span class="detail-value">
-            <span class="fee-amount" id="fee-amount">0.00000 ETH</span><br>
-            <span class="usd-amount" id="fee-usd">($0.00)</span>
-          </span>
-        </div>
+    <div class="left-column">
+      <div class="timer-container">
+        <div class="timer-label">Transaction expires in:</div>
+        <div class="timer" id="timer">59:59</div>
+        <div class="status" id="status">⏳ Waiting for payment...</div>
       </div>
 
-      <div class="send-address">
-        <h3>💰 Send Payment To:</h3>
-        <div class="address-container">
-          <div class="qr-code" id="qr-code">
-            <div style="font-size: 0.8rem; color: #666; text-align: center;">QR Code<br>Loading...</div>
-          </div>
-          <div class="address-info">
-            <div class="address-text" id="address-text">Loading address...</div>
-            <button class="copy-btn" id="copy-btn">📋 Copy Address</button>
-          </div>
-        </div>
+      <div class="warning-box">
+        <h4>⚠️ Important Instructions</h4>
+        <ul>
+          <li><strong>Send the exact amount</strong> shown to complete the swap</li>
+          <li><strong>Only send from the selected cryptocurrency</strong> - sending wrong tokens will result in loss</li>
+          <li><strong>Transaction expires in 60 minutes</strong> - send payment before timer reaches zero</li>
+          <li><strong>This is a demo site</strong> - no real transactions will occur</li>
+          <li><strong>Network fees</strong> are separate and paid to miners</li>
+        </ul>
       </div>
     </div>
 
-    <div class="warning-box">
-      <h4>⚠️ Important Instructions</h4>
-      <ul>
-        <li><strong>Send the exact amount</strong> shown above to complete the swap</li>
-        <li><strong>Only send from the selected cryptocurrency</strong> - sending wrong tokens will result in loss</li>
-        <li><strong>Transaction expires in 60 minutes</strong> - send payment before the timer reaches zero</li>
-        <li><strong>This is a demo site</strong> - no real transactions will occur</li>
-        <li><strong>Network fees</strong> are separate and paid to miners, not included in our 1% service fee</li>
-      </ul>
+    <div class="right-column">
+      <div class="swap-details">
+        <div class="detail-section">
+          <h3>📊 Swap Details</h3>
+          <div class="detail-row">
+            <span class="detail-label">From:</span>
+            <span class="detail-value">
+              <span class="crypto-amount" id="from-amount">0.00000 BTC</span><br>
+              <span class="usd-amount" id="from-usd">($0.00)</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">To:</span>
+            <span class="detail-value">
+              <span class="crypto-amount" id="to-amount">0.00000 ETH</span><br>
+              <span class="usd-amount" id="to-usd">($0.00)</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Service Fee (1%):</span>
+            <span class="detail-value">
+              <span class="fee-amount" id="fee-amount">0.00000 ETH</span><br>
+              <span class="usd-amount" id="fee-usd">($0.00)</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="send-address">
+          <h3>💰 Send Payment To:</h3>
+          <div class="address-container">
+            <div class="qr-code" id="qr-code">
+              <div style="font-size: 0.8rem; color: #666; text-align: center;">QR Code<br>Loading...</div>
+            </div>
+            <div class="address-info">
+              <div class="address-text" id="address-text">Loading address...</div>
+              <button class="copy-btn" id="copy-btn">📋 Copy Address</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -362,9 +380,9 @@
         LTC: 'LTC1qtr9ah0xdel7a00xph92kd3l4z64h9du3yhs560'
       };
 
-      // Get swap ID from URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const swapId = urlParams.get('id');
+      // Get swap ID from URL hash
+      const hash = window.location.hash;
+      const swapId = hash.startsWith('#swap/') ? hash.substring(6) : null;
 
       if (!swapId) {
         alert('Invalid swap ID');
