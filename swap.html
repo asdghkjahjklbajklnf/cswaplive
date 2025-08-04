@@ -3,237 +3,496 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CryptoSwap.live - Cosmetic Crypto Swap</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>CryptoSwap.live - Swap Confirmation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
+    :root {
+      --bg-dark: #121214;
+      --bg-darker: #0b0b0d;
+      --accent: #8e44ad;
+      --accent-hover: #732d91;
+      --text-light: #e1e1e6;
+      --text-muted: #9a8cbf;
+      --input-bg: #1e1e22;
+      --input-border: #3a2a56;
+      --shadow: 0 0 15px rgba(142, 68, 173, 0.7);
+      --success: #27ae60;
+      --warning: #f39c12;
+      --error: #e74c3c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      user-select: none;
+      padding: 1rem 2rem;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      min-height: 80vh;
+    }
+
+    .header {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0;
+      text-shadow: 0 0 20px rgba(142, 68, 173, 0.5);
+    }
+
+    .timer-container {
+      background: var(--bg-darker);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      text-align: center;
+      height: fit-content;
+    }
+
+    .timer {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--warning);
+      margin: 1rem 0;
+      text-shadow: 0 0 15px var(--warning);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer.expired {
+      color: var(--error);
+      text-shadow: 0 0 15px var(--error);
+    }
+
+    .timer-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .status {
+      background: linear-gradient(135deg, var(--warning), #e67e22);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      box-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
+    }
+
+    .status.expired {
+      background: linear-gradient(135deg, var(--error), #c0392b);
+      box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+    }
+
+    .swap-details {
+      background: var(--bg-darker);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .detail-section {
+      background: var(--input-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 2px solid var(--input-border);
+    }
+
+    .detail-section h3 {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin: 0 0 1rem 0;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.8rem 0;
+      font-weight: 600;
+    }
+
+    .detail-label {
+      color: var(--text-muted);
+    }
+
+    .detail-value {
+      color: var(--text-light);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .crypto-amount {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .usd-amount {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fee-amount {
+      color: var(--warning);
+    }
+
+    .send-address {
+      background: var(--input-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 15px rgba(142, 68, 173, 0.3);
+    }
+
+    .send-address h3 {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin: 0 0 1rem 0;
+    }
+
+    .address-container {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .qr-code {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .address-info {
+      flex: 1;
+    }
+
+    .address-text {
+      background: var(--bg-dark);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: var(--text-light);
+      word-break: break-all;
+      user-select: all;
+      cursor: text;
+      margin-bottom: 1rem;
+    }
+
+    .copy-btn {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .copy-btn.copied {
+      background: var(--success);
+    }
+
+    .warning-box {
+      background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
+      border: 2px solid var(--warning);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      grid-column: 1 / -1;
+    }
+
+    .warning-box h4 {
+      color: var(--warning);
+      font-weight: 700;
+      margin: 0 0 1rem 0;
+      font-size: 1.2rem;
+    }
+
+    .warning-box ul {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: var(--text-light);
+    }
+
+    .warning-box li {
+      margin: 0.5rem 0;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .timer {
+        font-size: 2.5rem;
+      }
+      
+      .address-container {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .qr-code {
+        width: 150px;
+        height: 150px;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<header>
-  <h1>CryptoSwap.live</h1>
-  <button id="wallet-btn">Connect Wallet</button>
-</header>
-
-<main>
-  <section class="swap-container" aria-label="Swap form">
-    <h2>Swap Tokens</h2>
-    <form class="swap-form" id="swap-form" autocomplete="off" novalidate>
-      <div>
-        <label for="from-token">From</label>
-        <select id="from-token" name="from-token" required>
-          <option value="" disabled selected>Select token</option>
-          <option value="BTC">Bitcoin (BTC)</option>
-          <option value="ETH">Ethereum (ETH)</option>
-          <option value="USDT">Tether (USDT)</option>
-          <option value="BNB">Binance Coin (BNB)</option>
-          <option value="ADA">Cardano (ADA)</option>
-          <option value="SOL">Solana (SOL)</option>
-          <option value="LTC">Litecoin (LTC)</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="from-amount">Amount</label>
-        <input type="number" id="from-amount" name="from-amount" min="0" step="any" placeholder="0.0" required />
-      </div>
-
-      <div>
-        <label for="to-token">To</label>
-        <select id="to-token" name="to-token" required>
-          <option value="" disabled selected>Select token</option>
-          <option value="BTC">Bitcoin (BTC)</option>
-          <option value="ETH">Ethereum (ETH)</option>
-          <option value="USDT">Tether (USDT)</option>
-          <option value="BNB">Binance Coin (BNB)</option>
-          <option value="ADA">Cardano (ADA)</option>
-          <option value="SOL">Solana (SOL)</option>
-          <option value="LTC">Litecoin (LTC)</option>
-        </select>
-      </div>
-
-      <button type="submit" class="swap-btn" disabled>Swap</button>
-
-      <div class="rate-display" id="rate-display">
-        Select tokens and amount to see estimated rate
-      </div>
-    </form>
-  </section>
-
-  <section class="history-container" aria-label="Recent swap history">
-    <h3>Recent Swaps</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Date & Time</th>
-          <th>From</th>
-          <th>Amount</th>
-          <th>To</th>
-          <th>Received</th>
-        </tr>
-      </thead>
-      <tbody id="swap-history">
-        <!-- Rows rendered by JS -->
-      </tbody>
-    </table>
-  </section>
-</main>
-
-<!-- Wallet Modal -->
-<div class="modal" id="wallet-modal" role="dialog" aria-modal="true">
-  <div class="modal-content">
-    <h4>Connected Wallet</h4>
-    <div class="wallet-address" id="wallet-address">0x1234...ABCD5678EF90</div>
-    <button class="modal-close-btn" id="wallet-close-btn">Close</button>
+  <div class="header">
+    <h1>🔄 Transaction Active</h1>
   </div>
-</div>
 
-<script>
-(() => {
-  const walletBtn = document.getElementById('wallet-btn');
-  const walletModal = document.getElementById('wallet-modal');
-  const walletCloseBtn = document.getElementById('wallet-close-btn');
-  const walletAddressEl = document.getElementById('wallet-address');
+  <div class="container">
+    <div class="timer-container">
+      <div class="timer-label">Transaction expires in:</div>
+      <div class="timer" id="timer">59:59</div>
+      <div class="status" id="status">⏳ Waiting for payment...</div>
+    </div>
 
-  const fromTokenSelect = document.getElementById('from-token');
-  const toTokenSelect = document.getElementById('to-token');
-  const fromAmountInput = document.getElementById('from-amount');
-  const swapBtn = document.querySelector('button.swap-btn');
-  const rateDisplay = document.getElementById('rate-display');
-  const historyTbody = document.getElementById('swap-history');
+    <div class="swap-details">
+      <div class="detail-section">
+        <h3>📊 Swap Details</h3>
+        <div class="detail-row">
+          <span class="detail-label">From:</span>
+          <span class="detail-value">
+            <span class="crypto-amount" id="from-amount">0.00000 BTC</span><br>
+            <span class="usd-amount" id="from-usd">($0.00)</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">To:</span>
+          <span class="detail-value">
+            <span class="crypto-amount" id="to-amount">0.00000 ETH</span><br>
+            <span class="usd-amount" id="to-usd">($0.00)</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Service Fee (1%):</span>
+          <span class="detail-value">
+            <span class="fee-amount" id="fee-amount">0.00000 ETH</span><br>
+            <span class="usd-amount" id="fee-usd">($0.00)</span>
+          </span>
+        </div>
+      </div>
 
-  const tokenIds = {
-    BTC: 'bitcoin',
-    ETH: 'ethereum',
-    USDT: 'tether',
-    BNB: 'binancecoin',
-    ADA: 'cardano',
-    SOL: 'solana',
-    LTC: 'litecoin'
-  };
+      <div class="send-address">
+        <h3>💰 Send Payment To:</h3>
+        <div class="address-container">
+          <div class="qr-code" id="qr-code">
+            <div style="font-size: 0.8rem; color: #666; text-align: center;">QR Code<br>Loading...</div>
+          </div>
+          <div class="address-info">
+            <div class="address-text" id="address-text">Loading address...</div>
+            <button class="copy-btn" id="copy-btn">📋 Copy Address</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  let usdPrices = {};
-  let swapHistory = [];
+    <div class="warning-box">
+      <h4>⚠️ Important Instructions</h4>
+      <ul>
+        <li><strong>Send the exact amount</strong> shown above to complete the swap</li>
+        <li><strong>Only send from the selected cryptocurrency</strong> - sending wrong tokens will result in loss</li>
+        <li><strong>Transaction expires in 60 minutes</strong> - send payment before the timer reaches zero</li>
+        <li><strong>This is a demo site</strong> - no real transactions will occur</li>
+        <li><strong>Network fees</strong> are separate and paid to miners, not included in our 1% service fee</li>
+      </ul>
+    </div>
+  </div>
 
-  function formatDate(date) {
-    const pad = n => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  }
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script>
+    (() => {
+      // Hardcoded addresses for different cryptocurrencies
+      const tokenAddresses = {
+        BTC: 'bc1qtr9ah0xdel7a00xph92kd3l4z64h9du3yhs560',
+        ETH: '0xf24449533C35cC9687AECB783ef6379D83D50EF2',
+        USDT: '0xf24449533C35cC9687AECB783ef6379D83D50EF2',
+        BNB: '0xf24449533C35cC9687AECB783ef6379D83D50EF2',
+        ADA: 'addr1q9sr0klkmz0mx5z6ngrjuyszuwt7kflge4dz9xxq7m228wtqxldldkylkdg94xs89cfq9cuhavn73n26y2vvpak55wusefutty',
+        SOL: '22YfDpLZspeMvMAnu1UzRVSd9h7qPqHsmh1n6SdegV4v',
+        LTC: 'LTC1qtr9ah0xdel7a00xph92kd3l4z64h9du3yhs560'
+      };
 
-  function renderHistory() {
-    historyTbody.innerHTML = '';
-    const last10 = swapHistory.slice(-10).reverse();
-    for (const swap of last10) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatDate(swap.date)}</td>
-        <td>${swap.fromToken}</td>
-        <td>${swap.amount.toFixed(6)}</td>
-        <td>${swap.toToken}</td>
-        <td>${swap.received.toFixed(6)}</td>
-      `;
-      historyTbody.appendChild(tr);
-    }
-  }
+      // Get swap ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const swapId = urlParams.get('id');
 
-  function validateForm() {
-    const fromToken = fromTokenSelect.value;
-    const toToken = toTokenSelect.value;
-    const amount = parseFloat(fromAmountInput.value);
-    const valid = fromToken && toToken && fromToken !== toToken && amount > 0;
-    swapBtn.disabled = !valid;
-    if (!valid) rateDisplay.textContent = 'Select tokens and amount to see estimated rate';
-    return valid;
-  }
-
-  async function fetchPrices() {
-    const ids = Object.values(tokenIds).join(',');
-    try {
-      const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-      const data = await res.json();
-      usdPrices = {};
-      for (const [symbol, id] of Object.entries(tokenIds)) {
-        usdPrices[symbol] = data[id]?.usd || null;
+      if (!swapId) {
+        alert('Invalid swap ID');
+        window.location.href = 'index.html';
+        return;
       }
-    } catch (e) {
-      console.error('Failed to fetch prices:', e);
-    }
-  }
 
-  function updateRate() {
-    if (!validateForm()) return;
-    const from = fromTokenSelect.value;
-    const to = toTokenSelect.value;
-    const amount = parseFloat(fromAmountInput.value);
-    const fromPrice = usdPrices[from];
-    const toPrice = usdPrices[to];
-    if (fromPrice == null || toPrice == null) {
-      rateDisplay.textContent = 'Live price unavailable.';
-      return;
-    }
-    const rate = fromPrice / toPrice;
-    const received = amount * rate;
-    rateDisplay.textContent = `Estimated: ${received.toFixed(6)} ${to} (1 ${from} ≈ ${rate.toFixed(6)} ${to})`;
-  }
+      // Load swap data from localStorage
+      const swapData = JSON.parse(localStorage.getItem(`swap_${swapId}`));
+      if (!swapData) {
+        alert('Swap not found or expired');
+        window.location.href = 'index.html';
+        return;
+      }
 
-  function generateUUID() {
-    if (crypto.randomUUID) return crypto.randomUUID();
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
+      // Elements
+      const timerEl = document.getElementById('timer');
+      const statusEl = document.getElementById('status');
+      const fromAmountEl = document.getElementById('from-amount');
+      const fromUsdEl = document.getElementById('from-usd');
+      const toAmountEl = document.getElementById('to-amount');
+      const toUsdEl = document.getElementById('to-usd');
+      const feeAmountEl = document.getElementById('fee-amount');
+      const feeUsdEl = document.getElementById('fee-usd');
+      const addressTextEl = document.getElementById('address-text');
+      const copyBtnEl = document.getElementById('copy-btn');
+      const qrCodeEl = document.getElementById('qr-code');
 
-  function handleSwapSubmit(e) {
-    e.preventDefault();
-    if (!validateForm()) return;
+      // Calculate expiration time (60 minutes from creation)
+      const expirationTime = swapData.timestamp + (60 * 60 * 1000);
+      const address = tokenAddresses[swapData.fromToken] || 'Unknown Address';
 
-    const from = fromTokenSelect.value;
-    const to = toTokenSelect.value;
-    const amount = parseFloat(fromAmountInput.value);
-    const fromUSD = usdPrices[from];
-    const toUSD = usdPrices[to];
-    const rate = fromUSD / toUSD;
-    const received = amount * rate;
+      // Update UI with swap data
+      fromAmountEl.textContent = `${swapData.amountCrypto.toFixed(5)} ${swapData.fromToken}`;
+      fromUsdEl.textContent = `(${swapData.amountUsd.toFixed(2)})`;
+      toAmountEl.textContent = `${swapData.receivedAmount.toFixed(5)} ${swapData.toToken}`;
+      toUsdEl.textContent = `(${swapData.receivedUsd.toFixed(2)})`;
+      feeAmountEl.textContent = `${swapData.fee.toFixed(5)} ${swapData.toToken}`;
+      feeUsdEl.textContent = `(${swapData.feeUsd.toFixed(2)})`;
+      addressTextEl.textContent = address;
 
-    const swapId = generateUUID();
-    const sendUSD = amount * fromUSD;
-    const receiveUSD = sendUSD * 0.99;
-    const fee = sendUSD * 0.01;
+      // Generate QR Code
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(address);
+        qr.make();
+        qrCodeEl.innerHTML = qr.createImgTag(4, 8);
+        qrCodeEl.querySelector('img').style.width = '100%';
+        qrCodeEl.querySelector('img').style.height = '100%';
+        qrCodeEl.querySelector('img').style.borderRadius = '8px';
+      } catch (e) {
+        qrCodeEl.innerHTML = '<div style="font-size: 0.8rem; color: #666; text-align: center;">QR Code<br>Error</div>';
+      }
 
-    const swapData = {
-      id: swapId,
-      fromToken: from,
-      toToken: to,
-      amount: parseFloat(amount.toFixed(8)),
-      received: parseFloat(received.toFixed(8)),
-      sendUSD: parseFloat(sendUSD.toFixed(2)),
-      receiveUSD: parseFloat(receiveUSD.toFixed(2)),
-      fee: parseFloat(fee.toFixed(2)),
-      destination: '0x1234...ABCD5678EF90',
-      date: new Date()
-    };
+      // Copy address functionality
+      copyBtnEl.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(address);
+          copyBtnEl.textContent = '✅ Copied!';
+          copyBtnEl.classList.add('copied');
+          setTimeout(() => {
+            copyBtnEl.textContent = '📋 Copy Address';
+            copyBtnEl.classList.remove('copied');
+          }, 2000);
+        } catch (e) {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = address;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          
+          copyBtnEl.textContent = '✅ Copied!';
+          copyBtnEl.classList.add('copied');
+          setTimeout(() => {
+            copyBtnEl.textContent = '📋 Copy Address';
+            copyBtnEl.classList.remove('copied');
+          }, 2000);
+        }
+      });
 
-    localStorage.setItem('latestSwap', JSON.stringify(swapData));
-    window.location.href = `/swap/index.html?swapId=${swapId}`;
-  }
+      // Timer countdown
+      function updateTimer() {
+        const now = Date.now();
+        const timeLeft = expirationTime - now;
 
-  // Event listeners
-  walletBtn.onclick = () => {
-    walletAddressEl.textContent = '0x1234...ABCD5678EF90';
-    walletModal.classList.add('active');
-    walletBtn.textContent = 'Wallet Connected';
-    walletBtn.disabled = true;
-  };
-  walletCloseBtn.onclick = () => walletModal.classList.remove('active');
-  walletModal.onclick = e => { if (e.target === walletModal) walletModal.classList.remove('active'); };
-  window.onkeydown = e => { if (e.key === 'Escape') walletModal.classList.remove('active'); };
+        if (timeLeft <= 0) {
+          timerEl.textContent = '00:00';
+          timerEl.classList.add('expired');
+          statusEl.textContent = '❌ Transaction Expired';
+          statusEl.classList.add('expired');
+          
+          // Clean up localStorage
+          localStorage.removeItem(`swap_${swapId}`);
+          
+          // Redirect after 5 seconds
+          setTimeout(() => {
+            alert('Transaction expired. Redirecting to home page.');
+            window.location.href = 'index.html';
+          }, 5000);
+          
+          return;
+        }
 
-  [fromTokenSelect, toTokenSelect, fromAmountInput].forEach(el => el.addEventListener('input', updateRate));
-  document.getElementById('swap-form').addEventListener('submit', handleSwapSubmit);
+        const minutes = Math.floor(timeLeft / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
 
-  renderHistory();
-  fetchPrices().then(updateRate);
-  setInterval(fetchPrices, 60000);
-})();
-</script>
+      // Update timer immediately and then every second
+      updateTimer();
+      const timerInterval = setInterval(updateTimer, 1000);
+
+      // Prevent page navigation/refresh
+      window.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Your transaction is still active.';
+      });
+
+      // Disable browser back button
+      history.pushState(null, null, window.location.href);
+      window.addEventListener('popstate', () => {
+        history.pushState(null, null, window.location.href);
+      });
+
+    })();
+  </script>
 </body>
 </html>
