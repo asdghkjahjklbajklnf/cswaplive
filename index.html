@@ -13,8 +13,8 @@
       --bg-darker: #0a0a0f;
       --card: rgba(18, 18, 26, 0.7);
       --card-solid: #13131a;
-      --accent: #9b59ff;
-      --accent-2: #6d43ff;
+      --accent: #9b59ff; /* electric purple */
+      --accent-2: #6d43ff; /* indigo */
       --accent-hover: #7b4bff;
       --text-light: #e7e7f1;
       --text-muted: #a8a8c7;
@@ -82,7 +82,7 @@
       font-family:'Poppins',sans-serif; letter-spacing:.02em; user-select:text;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
     }
-    select:focus, input[type="number"]:focus, input[type="text"]:focus{ outline:none; border-color:var(--accent); box-shadow:var(--ring);}
+    select:focus, input[type="number"]:focus, input[type="text"]focus{ outline:none; border-color:var(--accent); box-shadow:var(--ring);}
     select:hover, input[type="number"]:hover, input[type="text"]:hover{ border-color:#3a2a7a;}
     input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button{ opacity:.3; }
 
@@ -299,8 +299,8 @@
 
     // ---------- History (localStorage) ----------
     const STORAGE_KEY = 'recent_swaps_v2';
-    const MAX_ROWS = 20;
-    const INITIAL_ROWS = 10;
+    const MAX_ROWS = 10;       // <<<<<< capped at 10
+    const INITIAL_ROWS = 10;   // seed exactly 10
     let swapHistory = [];
 
     function saveHistory() {
@@ -313,10 +313,12 @@
       try {
         const arr = JSON.parse(raw);
         if (!Array.isArray(arr)) return false;
-        swapHistory = arr.map(s => ({ ...s, date: new Date(s.date) }));
-        // Guard against any future-stamped items from older versions:
         const now = Date.now();
-        swapHistory = swapHistory.filter(s => s.date.getTime() <= now);
+        swapHistory = arr
+          .map(s => ({ ...s, date: new Date(s.date) }))
+          .filter(s => s.date.getTime() <= now)        // never in future
+          .sort((a,b) => a.date - b.date)
+          .slice(-MAX_ROWS);                            // trim to last 10 if old data had more
         return true;
       } catch { return false; }
     }
@@ -331,7 +333,7 @@
       minute: '2-digit',
       second: '2-digit',
       hour12: true,
-      timeZoneName: 'short' // will show PST/PDT as appropriate
+      timeZoneName: 'short' // PDT/PST as appropriate
     });
     function formatDatePT(date) { return PT_FORMATTER.format(date); }
 
@@ -354,7 +356,6 @@
 
     function renderHistory() {
       historyTbody.innerHTML = '';
-      // Show newest first
       for (const swap of swapHistory.slice().reverse()) {
         const tr = document.createElement('tr');
         const tdDate = document.createElement('td'); tdDate.textContent = formatDatePT(swap.date); tr.appendChild(tdDate);
@@ -366,7 +367,7 @@
       }
     }
 
-    // Create a new dummy swap with timestamp = NOW (no future)
+    // Add a new dummy swap with timestamp = NOW; keep list at MAX_ROWS by removing oldest.
     function addNewDummySwapNow() {
       const tokens = Object.keys(CG_IDS);
       const fromToken = tokens[randomInt(0, tokens.length - 1)];
@@ -383,23 +384,23 @@
 
       const newSwap = { date: new Date(), fromToken, toToken, amount, received };
 
-      // Cap list: remove oldest first if full, then push newest
-      if (swapHistory.length >= MAX_ROWS) swapHistory.shift();
-      swapHistory.push(newSwap);
+      if (swapHistory.length >= MAX_ROWS) swapHistory.shift(); // remove oldest
+      swapHistory.push(newSwap); // add newest
 
       renderHistory();
       saveHistory();
     }
 
-    // Seed INITIAL_ROWS items in the past, ending exactly at now
+    // Seed exactly INITIAL_ROWS entries ending at NOW
     function seedInitialHistory() {
       const tokens = Object.keys(CG_IDS);
       const now = Date.now();
       let t = now;
 
       const seeded = [];
-      for (let i = 0; i < INITIAL_ROWS; i++) {
-        // Walk backwards by 2–7 minutes + 0–59 seconds each step
+
+      // Create INITIAL_ROWS - 1 in the past
+      for (let i = 0; i < INITIAL_ROWS - 1; i++) {
         const minutesBack = randomInt(2, 7);
         const secondsBack = randomInt(0, 59);
         t -= (minutesBack * 60 + secondsBack) * 1000;
@@ -417,15 +418,36 @@
         seeded.push({ date: new Date(t), fromToken, toToken, amount, received });
       }
 
-      // Ensure strictly not in the future and sorted ascending by date
+      // Sort ascending (oldest -> newest), clamp to not-in-future
       const safeNow = Date.now();
       swapHistory = seeded
         .filter(s => s.date.getTime() <= safeNow)
         .sort((a,b) => a.date - b.date);
 
-      // Append one item exactly at NOW so the newest equals real-life time
-      addNewDummySwapNow();
+      // Add the final 10th row at NOW
+      addNewDummySwapNow(); // this pushes one "now" row and trims if needed
+      // If we had fewer than 9 past rows (edge cases), top up with more past rows
+      while (swapHistory.length < MAX_ROWS) {
+        const lastOldest = swapHistory.length ? swapHistory[0].date.getTime() : Date.now();
+        const minutesBack = randomInt(8, 14);
+        const secondsBack = randomInt(0, 59);
+        const ts = lastOldest - (minutesBack * 60 + secondsBack) * 1000;
 
+        const fromToken = tokens[randomInt(0, tokens.length - 1)];
+        let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
+
+        const usdValue = Math.random() * (857 - 12) + 12;
+        const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
+        const toPrice   = usdPrices[toToken]   || DEFAULT_PRICES[toToken];
+
+        const amount   = +(usdValue / fromPrice).toFixed(5);
+        const received = +(usdValue / toPrice).toFixed(5);
+
+        swapHistory.unshift({ date: new Date(ts), fromToken, toToken, amount, received });
+      }
+
+      // Ensure exactly 10 and render
+      swapHistory = swapHistory.slice(-MAX_ROWS);
       renderHistory();
       saveHistory();
     }
@@ -563,14 +585,12 @@
       const restored = loadHistory();
 
       if (!restored || swapHistory.length === 0) {
-        seedInitialHistory();
+        seedInitialHistory(); // seeds exactly 10 rows including "now"
       } else {
-        // Ensure ascending order by date, and render
-        swapHistory.sort((a,b) => a.date - b.date);
         renderHistory();
       }
 
-      // Every 10–20s: add a row with exact current time (PT-rendered)
+      // Every 10–20s: add a row with exact current time (PT-rendered), drop oldest
       setInterval(() => { addNewDummySwapNow(); }, randomInt(10000, 20000));
 
       // Refresh prices every minute
