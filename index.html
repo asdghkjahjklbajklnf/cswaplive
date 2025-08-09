@@ -48,34 +48,24 @@
       user-select: none;
     }
 
-    .bg-sheen {
-      position: fixed; inset: 0; pointer-events: none;
+    .bg-sheen { position: fixed; inset: 0; pointer-events: none;
       background: conic-gradient(from 200deg at 70% 20%, rgba(155,89,255,0.12), rgba(109,67,255,0.08), transparent 40%);
-      mix-blend-mode: screen; animation: drift 18s linear infinite; opacity: 0.9;
-    }
+      mix-blend-mode: screen; animation: drift 18s linear infinite; opacity: 0.9; }
     @keyframes drift { 0%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-2%) rotate(1deg)} 100%{transform:translateY(0) rotate(0)} }
 
-    header {
-      max-width: 1200px; margin: 0 auto; padding: 24px 24px 12px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
+    header { max-width: 1200px; margin: 0 auto; padding: 24px 24px 12px; display: flex; align-items: center; justify-content: space-between; }
     .brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text-light); }
     .logo { width:36px; height:36px; border-radius:12px;
       background: radial-gradient(120% 120% at 20% 20%, #b88cff 0%, #6d43ff 50%, #3e1a7a 100%);
-      box-shadow: 0 8px 24px rgba(109,67,255,0.35), inset 0 0 12px rgba(255,255,255,0.12);
-    }
+      box-shadow: 0 8px 24px rgba(109,67,255,0.35), inset 0 0 12px rgba(255,255,255,0.12); }
     .brand h1 { font-size:1.15rem; margin:0; letter-spacing:.4px; }
     .tag { color:var(--text-muted); font-size:.85rem; }
 
-    main {
-      max-width: 1200px; margin: 0 auto; padding: 12px 24px 48px;
-      display: grid; grid-template-columns: 3fr 1.2fr; gap: 24px; min-height: 75vh;
-    }
-
+    main { max-width: 1200px; margin: 0 auto; padding: 12px 24px 48px; display: grid; grid-template-columns: 3fr 1.2fr; gap: 24px; min-height: 75vh; }
     .left-main { display:flex; flex-direction:column; gap:24px; }
+
     .card { background:var(--card); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
-      border-radius:16px; box-shadow:var(--shadow-lg); border:var(--border);
-    }
+      border-radius:16px; box-shadow:var(--shadow-lg); border:var(--border); }
 
     .swap-container { padding:28px; display:flex; flex-direction:column; gap:18px; }
     .swap-container h2 { margin:0 0 8px 0; font-weight:700; font-size:1.75rem; color:#d9ccff; letter-spacing:.3px; }
@@ -256,23 +246,23 @@
 
 <script>
   (() => {
-    // ---- Pricing (Binance) ----
-    const BINANCE_PAIRS = {
-      BTC: 'BTCUSDT',
-      ETH: 'ETHUSDT',
-      USDT: null,        // peg to 1
-      BNB: 'BNBUSDT',
-      ADA: 'ADAUSDT',
-      SOL: 'SOLUSDT',
-      LTC: 'LTCUSDT'
+    // ---------- CoinGecko pricing ----------
+    const CG_IDS = {
+      BTC: 'bitcoin',
+      ETH: 'ethereum',
+      USDT: 'tether',
+      BNB: 'binancecoin',
+      ADA: 'cardano',
+      SOL: 'solana',
+      LTC: 'litecoin'
     };
 
     const usdPrices = {};
-    const DEFAULT_PRICES = { BTC: 64000, ETH: 3000, USDT: 1, BNB: 500, ADA: 0.6, SOL: 150, LTC: 80 };
-    const PRICE_CACHE_KEY = 'usd_prices_binance_v1';
+    const DEFAULT_PRICES = { BTC: 64000, ETH: 3000, USDT: 1, BNB: 500, ADA: 0.8, SOL: 150, LTC: 80 };
+    const PRICE_CACHE_KEY = 'usd_prices_coingecko_v1';
 
     function applyPrices(map) {
-      for (const k of Object.keys(BINANCE_PAIRS)) {
+      for (const k of Object.keys(CG_IDS)) {
         const v = map[k];
         usdPrices[k] = (typeof v === 'number' && isFinite(v) && v > 0) ? v : DEFAULT_PRICES[k];
       }
@@ -281,27 +271,32 @@
 
     async function fetchPrices() {
       try {
-        const url = "https://api.coincap.io/v2/assets?ids=bitcoin,ethereum,binance-coin,cardano,solana,litecoin,tether";
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error("coincap " + res.status);
-        const json = await res.json();
-        const byId = Object.fromEntries(json.data.map(a => [a.id, parseFloat(a.priceUsd)]));
-        const fresh = {
-          BTC: byId["bitcoin"], ETH: byId["ethereum"], USDT: 1,
-          BNB: byId["binance-coin"], ADA: byId["cardano"],
-          SOL: byId["solana"], LTC: byId["litecoin"]
-        };
+        const ids = Object.values(CG_IDS).join(',');
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('coingecko status ' + res.status);
+        const data = await res.json();
+        const fresh = {};
+        for (const [sym, id] of Object.entries(CG_IDS)) {
+          const val = data?.[id]?.usd;
+          if (typeof val === 'number') fresh[sym] = val;
+        }
         applyPrices(fresh);
         localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify({ t: Date.now(), prices: fresh }));
-      } catch {
+      } catch (e) {
         const cached = localStorage.getItem(PRICE_CACHE_KEY);
-        if (cached) { try { applyPrices(JSON.parse(cached).prices || DEFAULT_PRICES); } catch { applyPrices(DEFAULT_PRICES); } }
-        else { applyPrices(DEFAULT_PRICES); }
+        if (cached) {
+          try {
+            const { prices } = JSON.parse(cached);
+            applyPrices(prices || DEFAULT_PRICES);
+          } catch { applyPrices(DEFAULT_PRICES); }
+        } else {
+          applyPrices(DEFAULT_PRICES);
+        }
       }
     }
 
-
-    // ---- Recent Swaps (localStorage, constant size, $12-$857 USD sizing) ----
+    // ---------- History (localStorage) ----------
     const STORAGE_KEY = 'recent_swaps_v2';
     const MAX_ROWS = 20;
     const INITIAL_ROWS = 10;
@@ -322,7 +317,7 @@
       } catch { return false; }
     }
 
-    // ---- DOM ----
+    // ---------- DOM ----------
     const fromTokenSelect = document.getElementById('from-token');
     const toTokenSelect   = document.getElementById('to-token');
     const fromAmountInput = document.getElementById('from-amount');
@@ -336,7 +331,7 @@
 
     let currentAmountType = 'crypto';
 
-    // ---- Helpers ----
+    // ---------- Helpers ----------
     function formatDate(date) { return date.toLocaleString(); }
     function randomInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
@@ -355,7 +350,7 @@
 
     // USD-bounded generator ($12–$857)
     function addNewDummySwap() {
-      const tokens = Object.keys(BINANCE_PAIRS);
+      const tokens = Object.keys(CG_IDS);
       const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
       const minutesGap = randomInt(5, 20);
       const secondsGap = randomInt(0, 59);
@@ -510,8 +505,7 @@
 
     // Init: wait for prices first to avoid bogus amounts
     async function init() {
-      await fetchPrices();
-
+      await fetchPrices(); // CG only
       const restored = loadHistory();
       if (!restored) {
         for (let i = 0; i < INITIAL_ROWS; i++) addNewDummySwap();
@@ -519,9 +513,8 @@
       } else {
         renderHistory();
       }
-
       setInterval(() => { addNewDummySwap(); }, randomInt(10000, 20000));
-      setInterval(fetchPrices, 60000); // refresh prices every minute
+      setInterval(fetchPrices, 60000); // refresh every minute
     }
     init();
   })();
