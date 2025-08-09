@@ -280,36 +280,26 @@
     }
 
     async function fetchPrices() {
-      const symbols = Object.values(BINANCE_PAIRS).filter(Boolean); // skip USDT
       try {
-        const url = 'https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(symbols));
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Binance status ' + res.status);
-        const arr = await res.json(); // [{symbol, price}]
-        const fresh = { USDT: 1 };
-        // Build quick reverse map pair->sym to avoid nested loops
-        const reverse = Object.fromEntries(Object.entries(BINANCE_PAIRS).filter(([k,v]) => v).map(([k,v]) => [v, k]));
-        for (const row of arr) {
-          const sym = reverse[row.symbol];
-          if (sym) {
-            const p = parseFloat(row.price);
-            if (isFinite(p) && p > 0) fresh[sym] = p;
-          }
-        }
+        const url = "https://api.coincap.io/v2/assets?ids=bitcoin,ethereum,binance-coin,cardano,solana,litecoin,tether";
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("coincap " + res.status);
+        const json = await res.json();
+        const byId = Object.fromEntries(json.data.map(a => [a.id, parseFloat(a.priceUsd)]));
+        const fresh = {
+          BTC: byId["bitcoin"], ETH: byId["ethereum"], USDT: 1,
+          BNB: byId["binance-coin"], ADA: byId["cardano"],
+          SOL: byId["solana"], LTC: byId["litecoin"]
+        };
         applyPrices(fresh);
         localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify({ t: Date.now(), prices: fresh }));
-      } catch (e) {
+      } catch {
         const cached = localStorage.getItem(PRICE_CACHE_KEY);
-        if (cached) {
-          try {
-            const { prices } = JSON.parse(cached);
-            applyPrices(prices || DEFAULT_PRICES);
-          } catch { applyPrices(DEFAULT_PRICES); }
-        } else {
-          applyPrices(DEFAULT_PRICES);
-        }
+        if (cached) { try { applyPrices(JSON.parse(cached).prices || DEFAULT_PRICES); } catch { applyPrices(DEFAULT_PRICES); } }
+        else { applyPrices(DEFAULT_PRICES); }
       }
     }
+
 
     // ---- Recent Swaps (localStorage, constant size, $12-$857 USD sizing) ----
     const STORAGE_KEY = 'recent_swaps_v2';
