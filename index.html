@@ -356,6 +356,8 @@
         <p id="history-description" class="sr-only">Recent Swaps</p>
       </section>
     </section>
+  </main>
+
 <script>
   (() => {
     const tokenIds = {
@@ -371,6 +373,29 @@
     const usdPrices = {};
     let swapHistory = [];
 
+    // LocalStorage persistence config
+    const STORAGE_KEY = 'recent_swaps_v1';
+    const MAX_ROWS = 20;      // total rows to keep/render
+    const INITIAL_ROWS = 10;  // rows to create on first visit
+
+    function saveHistory() {
+      const plain = swapHistory.map(s => ({ ...s, date: s.date.toISOString() }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plain));
+    }
+
+    function loadHistory() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      try {
+        const arr = JSON.parse(raw);
+        if (!Array.isArray(arr)) return false;
+        swapHistory = arr.map(s => ({ ...s, date: new Date(s.date) }));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     // Elements
     const fromTokenSelect = document.getElementById('from-token');
     const toTokenSelect = document.getElementById('to-token');
@@ -385,7 +410,7 @@
 
     let currentAmountType = 'crypto';
 
-    // Footer year
+    // Footer year (if present)
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
@@ -442,16 +467,28 @@
       const minutesGap = randomInt(5, 20);
       const secondsGap = randomInt(0, 59);
       const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
+
       let fromToken = tokens[randomInt(0, tokens.length - 1)];
       let toToken;
       do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
       let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
+
       const fromPrice = usdPrices[fromToken] || 1;
       const toPrice = usdPrices[toToken] || 1;
       const received = +(amount * fromPrice / toPrice).toFixed(5);
-      swapHistory.push({ date: new Date(newTime), fromToken, toToken, amount, received });
-      if (swapHistory.length > 20) swapHistory.shift();
+
+      const newSwap = { date: new Date(newTime), fromToken, toToken, amount, received };
+
+      if (swapHistory.length < MAX_ROWS) {
+        swapHistory.push(newSwap);
+      } else {
+        // keep constant length: append newest, drop oldest immediately
+        swapHistory.push(newSwap);
+        swapHistory.shift();
+      }
+
       renderHistory();
+      saveHistory();
     }
 
     // Calculate received tokens for swap UI based on current input & prices
@@ -545,7 +582,7 @@
       window.location.href = `swap.html?id=${swapId}`;
     }
 
-    // Tabs
+    // Tabs (safe if none present)
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     function activateTab(index) {
@@ -554,8 +591,10 @@
         btn.classList.toggle('active', selected);
         btn.setAttribute('aria-selected', selected);
         btn.tabIndex = selected ? 0 : -1;
-        tabContents[i].classList.toggle('active', selected);
-        tabContents[i].hidden = !selected;
+        if (tabContents[i]) {
+          tabContents[i].classList.toggle('active', selected);
+          tabContents[i].hidden = !selected;
+        }
       });
     }
     tabButtons.forEach((btn, i) => {
@@ -583,8 +622,16 @@
     // Init
     async function init() {
       await fetchPrices();
-      for (let i = 0; i < 10; i++) { addNewDummySwap(); }
-      renderHistory();
+
+      const restored = loadHistory();
+      if (!restored) {
+        for (let i = 0; i < INITIAL_ROWS; i++) { addNewDummySwap(); }
+        saveHistory();
+      } else {
+        renderHistory();
+      }
+
+      // Keep list constant size while adding new entries periodically
       setInterval(() => { addNewDummySwap(); }, randomInt(10000, 20000));
     }
     init();
