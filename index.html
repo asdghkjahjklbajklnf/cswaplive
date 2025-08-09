@@ -352,6 +352,7 @@
     const amountLabel     = document.getElementById('amount-label');
     const errorContainer  = document.getElementById('error-container');
     const destAddressInput= document.getElementById('dest-address');
+    const swapForm        = document.getElementById('swap-form');
 
     let currentAmountType = 'crypto';
 
@@ -454,8 +455,9 @@
       if (!from || !to || !amount || amount <= 0 || from === to) return null;
       const fromPrice = usdPrices[from] || DEFAULT_PRICES[from];
       const toPrice   = usdPrices[to]   || DEFAULT_PRICES[to];
-      if (amountType === 'crypto') return amount * fromPrice / toPrice;
-      return amount / toPrice; // USD input
+      // gross amount before fee:
+      const gross = (amountType === 'crypto') ? (amount * fromPrice / toPrice) : (amount / toPrice);
+      return gross;
     }
 
     function updateUI() {
@@ -464,23 +466,27 @@
       let amountVal = parseFloat(fromAmountInput.value);
 
       if (isNaN(amountVal) || amountVal <= 0) { swapBtn.disabled = true; rateDisplay.textContent = 'Enter a valid amount'; clearError(); return; }
-      if (!from || !to || from === to) { swapBtn.disabled = true; rateDisplay.textContent = 'Select different tokens'; clearError(); return; }
+      if (!from || !to) { swapBtn.disabled = true; rateDisplay.textContent = 'Select tokens'; clearError(); return; }
+      if (from === to) { swapBtn.disabled = true; rateDisplay.textContent = 'Select different tokens'; clearError(); return; }
 
       const fromPrice = usdPrices[from] || DEFAULT_PRICES[from];
       let usdValue = currentAmountType === 'crypto' ? amountVal * fromPrice : amountVal;
 
       if (usdValue < 10) { swapBtn.disabled = true; rateDisplay.textContent = 'Minimum swap amount is $10 USD equivalent'; clearError(); return; }
-      swapBtn.disabled = false;
 
+      const gross = calculateReceived(from, to, amountVal, currentAmountType);
+      if (gross === null) { swapBtn.disabled = true; rateDisplay.textContent = 'Select valid tokens and amount'; return; }
+
+      const receivedAfterFee = gross * 0.99; // 1% fee
+
+      swapBtn.disabled = false;
       clearError();
-      const received = calculateReceived(from, to, amountVal, currentAmountType);
-      if (received === null) { rateDisplay.textContent = 'Select valid tokens and amount'; return; }
 
       if (currentAmountType === 'crypto') {
-        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} (includes 1% fee)`;
+        rateDisplay.textContent = `Estimated: ${receivedAfterFee.toFixed(5)} ${to} (includes 1% fee)`;
       } else {
         const cryptoAmount = amountVal / fromPrice;
-        rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee)`;
+        rateDisplay.textContent = `Estimated: ${receivedAfterFee.toFixed(5)} ${to} for $${amountVal.toFixed(2)} (≈ ${cryptoAmount.toFixed(5)} ${from}) (includes 1% fee)`;
       }
     }
 
@@ -572,22 +578,42 @@
       }, gapSec * 1000);
     }
 
+    // ---- Wire up listeners (the missing piece) ----
+    function wireInputs() {
+      fromTokenSelect.addEventListener('change', updateUI);
+      toTokenSelect.addEventListener('change', updateUI);
+      fromAmountInput.addEventListener('input', updateUI);
+      amountToggleRadios.forEach(r => {
+        r.addEventListener('change', (e) => {
+          if (!e.target.checked) return;
+          currentAmountType = e.target.value;
+          amountLabel.textContent = currentAmountType === 'crypto' ? 'Amount (Crypto)' : 'Amount (USD)';
+          updateUI();
+        });
+      });
+      swapForm.addEventListener('submit', handleSwap);
+    }
+
     // Init
     async function init() {
+      wireInputs();
       await fetchPrices();
-      const restored = loadHistory();
 
+      const restored = loadHistory();
       if (!restored || swapHistory.length === 0) {
-        seedInitialHistory(); // seeds exactly 10 rows (9 past spaced by your range + 1 at now)
+        seedInitialHistory(); // seeds exactly 10 rows (9 past + 1 at now)
       } else {
         renderHistory();
       }
 
-      // Start randomized live updates using your gap range
+      // Start randomized live updates
       scheduleNextSwap();
 
       // Refresh prices every minute
-      setInterval(fetchPrices, 60000);
+      setInterval(async () => { await fetchPrices(); updateUI(); }, 60000);
+
+      // Initial UI evaluation
+      updateUI();
     }
     init();
   })();
