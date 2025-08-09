@@ -8,295 +8,126 @@
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 
     :root {
-      --bg-dark: #121214;
-      --bg-darker: #0b0b0d;
-      --accent: #8e44ad;
-      --accent-hover: #732d91;
-      --text-light: #e1e1e6;
-      --text-muted: #9a8cbf;
-      --input-bg: #1e1e22;
-      --input-border: #3a2a56;
-      --shadow: 0 0 15px rgba(142, 68, 173, 0.7);
-      --success: #27ae60;
+      --bg-dark: #0b0b10;
+      --bg-darker: #0a0a0f;
+      --card: rgba(18, 18, 26, 0.7);
+      --card-solid: #13131a;
+      --accent: #9b59ff; /* electric purple */
+      --accent-2: #6d43ff; /* indigo */
+      --accent-hover: #7b4bff;
+      --text-light: #e7e7f1;
+      --text-muted: #a8a8c7;
+      --input-bg: #15151d;
+      --input-border: #2a2750;
+      --ring: 0 0 0 4px rgba(155, 89, 255, 0.15);
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
+      --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --border: 1px solid rgba(255, 255, 255, 0.06);
+      --glass: blur(10px) saturate(120%);
+      --success: #37d67a;
       --warning: #f39c12;
       --error: #e74c3c;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
 
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: var(--bg-dark);
+      background: radial-gradient(1200px 800px at 10% -10%, #1a1340 0%, transparent 60%),
+                  radial-gradient(1000px 700px at 110% 20%, #0e3c5a 0%, transparent 60%),
+                  radial-gradient(1200px 900px at 50% 120%, #2a1258 0%, transparent 60%),
+                  linear-gradient(180deg, var(--bg-darker), var(--bg-dark));
       color: var(--text-light);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       user-select: none;
-      padding: 1rem 2rem;
       overflow-x: hidden;
     }
 
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      min-height: 80vh;
+    /* subtle animated sheen */
+    .bg-sheen { position: fixed; inset: 0; pointer-events: none; background: conic-gradient(from 200deg at 70% 20%, rgba(155,89,255,0.12), rgba(109,67,255,0.08), transparent 40%); mix-blend-mode: screen; animation: drift 18s linear infinite; opacity: 0.9; }
+    @keyframes drift { 0% { transform: translateY(0) rotate(0deg);} 50% { transform: translateY(-2%) rotate(1deg);} 100% { transform: translateY(0) rotate(0deg);} }
+
+    header { max-width: 1100px; margin: 0 auto; padding: 24px 24px 12px; display: flex; align-items: center; justify-content: center; }
+    .header-badge { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: rgba(109,67,255,0.12); border: 1px solid rgba(109,67,255,0.25); box-shadow: 0 8px 22px rgba(109,67,255,0.22); }
+    .header-badge h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.3px; color: #e9e6ff; font-weight: 800; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 12px 24px 48px; display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 24px; min-height: 80vh; }
+
+    .card { background: var(--card); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-radius: 16px; box-shadow: var(--shadow-lg); border: var(--border); }
+
+    .timer-container { padding: 22px 22px; text-align: center; align-self: start; }
+    .timer-label { font-size: 0.98rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+    .timer { font-size: 3rem; font-weight: 900; color: var(--warning); margin: 8px 0 12px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.35); font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+    .timer.expired { color: var(--error); text-shadow: 0 0 15px rgba(231, 76, 60, 0.35); }
+    .status { background: linear-gradient(135deg, var(--warning), #e67e22); color: white; padding: 10px 14px; border-radius: 12px; font-weight: 800; font-size: 0.98rem; margin-top: 8px; box-shadow: 0 0 20px rgba(243, 156, 18, 0.25); }
+    .status.expired { background: linear-gradient(135deg, var(--error), #c0392b); box-shadow: 0 0 20px rgba(231, 76, 60, 0.25); }
+
+    .swap-details { padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+
+    .detail-section { background: linear-gradient(180deg, rgba(20,20,32,0.9), rgba(16,16,26,0.9)); border-radius: 14px; padding: 16px; border: var(--border); }
+    .detail-section h3 { color: #d9ccff; font-weight: 800; font-size: 1.1rem; margin: 0 0 10px 0; }
+
+    .detail-row { display: flex; justify-content: space-between; margin: 10px 0; font-weight: 600; }
+    .detail-label { color: var(--text-muted); }
+    .detail-value { color: var(--text-light); text-align: right; font-variant-numeric: tabular-nums; }
+    .crypto-amount { color: var(--accent); font-weight: 800; }
+    .usd-amount { color: var(--text-muted); font-size: 0.9rem; }
+    .fee-amount { color: var(--warning); }
+
+    .send-address { background: linear-gradient(180deg, rgba(20,20,32,0.9), rgba(16,16,26,0.9)); border-radius: 14px; padding: 16px; border: 1px solid rgba(155,89,255,0.35); box-shadow: 0 10px 30px rgba(155,89,255,0.22); }
+    .send-address h3 { color: #d9ccff; font-weight: 800; font-size: 1.1rem; margin: 0 0 12px 0; }
+
+    .address-container { display: flex; gap: 14px; align-items: center; }
+    .qr-code { width: 120px; height: 120px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+    .address-info { flex: 1; }
+    .address-text { background: #0f0f16; border: 1px solid rgba(155,89,255,0.35); border-radius: 10px; padding: 12px; font-family: 'Courier New', monospace; font-size: 0.92rem; color: var(--text-light); word-break: break-all; user-select: all; cursor: text; margin-bottom: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+
+    .copy-btn { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: none; color: white; padding: 10px 14px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: filter 0.25s ease, transform 0.06s ease, box-shadow 0.25s ease; font-family: 'Poppins', sans-serif; box-shadow: 0 10px 30px rgba(109,67,255,0.35); }
+    .copy-btn:hover { filter: saturate(110%); box-shadow: 0 16px 40px rgba(109,67,255,0.45); }
+    .copy-btn:active { transform: translateY(1px); }
+    .copy-btn.copied { background: linear-gradient(135deg, #3bbf7d, #2a9c63); box-shadow: 0 12px 34px rgba(58,191,125,0.35); }
+
+    .warning-box { background: linear-gradient(180deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.08)); border: 1px solid rgba(243, 156, 18, 0.6); border-radius: 14px; padding: 16px; grid-column: 1 / -1; }
+    .warning-box h4 { color: var(--warning); font-weight: 800; margin: 0 0 10px 0; font-size: 1.05rem; }
+    .warning-box ul { margin: 0; padding-left: 1.2rem; color: var(--text-light); }
+    .warning-box li { margin: 6px 0; font-weight: 500; }
+
+    footer { max-width: 1100px; margin: 0 auto; padding: 16px 24px 32px; color: var(--text-muted); font-size: 0.9rem; text-align: center; }
+
+    @media (max-width: 860px) {
+      main { grid-template-columns: 1fr; }
+      .address-container { flex-direction: column; text-align: center; }
+      .qr-code { width: 150px; height: 150px; }
     }
 
-    .header {
-      grid-column: 1 / -1;
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--accent);
-      margin: 0;
-      text-shadow: 0 0 20px rgba(142, 68, 173, 0.5);
-    }
-
-    .timer-container {
-      background: var(--bg-darker);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      padding: 2rem;
-      text-align: center;
-      height: fit-content;
-    }
-
-    .timer {
-      font-size: 3rem;
-      font-weight: 800;
-      color: var(--warning);
-      margin: 1rem 0;
-      text-shadow: 0 0 15px var(--warning);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .timer.expired {
-      color: var(--error);
-      text-shadow: 0 0 15px var(--error);
-    }
-
-    .timer-label {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
-    }
-
-    .status {
-      background: linear-gradient(135deg, var(--warning), #e67e22);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-top: 1.5rem;
-      box-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
-    }
-
-    .status.expired {
-      background: linear-gradient(135deg, var(--error), #c0392b);
-      box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-    }
-
-    .swap-details {
-      background: var(--bg-darker);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .detail-section {
-      background: var(--input-bg);
-      border-radius: 12px;
-      padding: 1.5rem;
-      border: 2px solid var(--input-border);
-    }
-
-    .detail-section h3 {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.3rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      margin: 0.8rem 0;
-      font-weight: 600;
-    }
-
-    .detail-label {
-      color: var(--text-muted);
-    }
-
-    .detail-value {
-      color: var(--text-light);
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .crypto-amount {
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .usd-amount {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .fee-amount {
-      color: var(--warning);
-    }
-
-    .send-address {
-      background: var(--input-bg);
-      border-radius: 12px;
-      padding: 1.5rem;
-      border: 2px solid var(--accent);
-      box-shadow: 0 0 15px rgba(142, 68, 173, 0.3);
-    }
-
-    .send-address h3 {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.3rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .address-container {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .qr-code {
-      width: 120px;
-      height: 120px;
-      background: white;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .address-info {
-      flex: 1;
-    }
-
-    .address-text {
-      background: var(--bg-dark);
-      border: 2px solid var(--accent);
-      border-radius: 8px;
-      padding: 1rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      color: var(--text-light);
-      word-break: break-all;
-      user-select: all;
-      cursor: text;
-      margin-bottom: 1rem;
-    }
-
-    .copy-btn {
-      background: var(--accent);
-      border: none;
-      color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .copy-btn:hover {
-      background: var(--accent-hover);
-    }
-
-    .copy-btn.copied {
-      background: var(--success);
-    }
-
-    .warning-box {
-      background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
-      border: 2px solid var(--warning);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-top: 2rem;
-      grid-column: 1 / -1;
-    }
-
-    .warning-box h4 {
-      color: var(--warning);
-      font-weight: 700;
-      margin: 0 0 1rem 0;
-      font-size: 1.2rem;
-    }
-
-    .warning-box ul {
-      margin: 0;
-      padding-left: 1.5rem;
-      color: var(--text-light);
-    }
-
-    .warning-box li {
-      margin: 0.5rem 0;
-      font-weight: 500;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-      
-      .header h1 {
-        font-size: 2rem;
-      }
-      
-      .timer {
-        font-size: 2.5rem;
-      }
-      
-      .address-container {
-        flex-direction: column;
-        text-align: center;
-      }
-      
-      .qr-code {
-        width: 150px;
-        height: 150px;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      .bg-sheen { animation: none; }
+      .copy-btn, .status { transition: none !important; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🔄 Transaction Active</h1>
-  </div>
+  <div class="bg-sheen" aria-hidden="true"></div>
 
-  <div class="container">
-    <div class="timer-container">
+  <header>
+    <div class="header-badge" aria-live="polite">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 12a8 8 0 0113.657-5.657l1.415-1.415A10 10 0 002 12h2zm16 0a8 8 0 01-13.657 5.657l-1.415 1.415A10 10 0 0022 12h-2z" fill="currentColor"/></svg>
+      <h1>Transaction Active</h1>
+    </div>
+  </header>
+
+  <main>
+    <section class="timer-container card">
       <div class="timer-label">Transaction expires in:</div>
       <div class="timer" id="timer">59:59</div>
       <div class="status" id="status">⏳ Waiting for payment...</div>
-    </div>
+    </section>
 
-    <div class="swap-details">
+    <section class="swap-details card">
       <div class="detail-section">
         <h3>📊 Swap Details</h3>
         <div class="detail-row">
@@ -334,18 +165,22 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="warning-box">
+    <section class="warning-box card">
       <h4>⚠️ Important Instructions</h4>
       <ul>
-        <li><strong>Send the exact amount</strong> shown above to complete the swap</li>
-        <li><strong>Only send from the selected cryptocurrency</strong> - sending wrong tokens will result in loss</li>
-        <li><strong>Transaction expires in 60 minutes</strong> - send payment before the timer reaches zero</li>
-        <li><strong>Network fees</strong> are separate and paid to miners, not included in our 1% service fee</li>
+        <li><strong>Send the exact amount</strong> shown above to complete the swap.</li>
+        <li><strong>Only send from the selected cryptocurrency</strong> — sending wrong tokens will result in loss.</li>
+        <li><strong>Transaction expires in 60 minutes</strong> — send payment before the timer reaches zero.</li>
+        <li><strong>Network fees</strong> are separate and paid to miners; they are not included in our 1% service fee.</li>
       </ul>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> CryptoSwap.live — All rights reserved.
+  </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script>
@@ -360,6 +195,10 @@
         SOL: '22YfDpLZspeMvMAnu1UzRVSd9h7qPqHsmh1n6SdegV4v',
         LTC: 'LTC1qtr9ah0xdel7a00xph92kd3l4z64h9du3yhs560'
       };
+
+      // Footer year
+      const yearEl = document.getElementById('year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
 
       // Get swap ID from URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -413,7 +252,7 @@
         qrCodeEl.innerHTML = qr.createImgTag(4, 8);
         qrCodeEl.querySelector('img').style.width = '100%';
         qrCodeEl.querySelector('img').style.height = '100%';
-        qrCodeEl.querySelector('img').style.borderRadius = '8px';
+        qrCodeEl.querySelector('img').style.borderRadius = '10px';
       } catch (e) {
         qrCodeEl.innerHTML = '<div style="font-size: 0.8rem; color: #666; text-align: center;">QR Code<br>Error</div>';
       }
@@ -436,7 +275,6 @@
           textArea.select();
           document.execCommand('copy');
           document.body.removeChild(textArea);
-          
           copyBtnEl.textContent = '✅ Copied!';
           copyBtnEl.classList.add('copied');
           setTimeout(() => {
@@ -450,32 +288,22 @@
       function updateTimer() {
         const now = Date.now();
         const timeLeft = expirationTime - now;
-
         if (timeLeft <= 0) {
           timerEl.textContent = '00:00';
           timerEl.classList.add('expired');
           statusEl.textContent = '❌ Transaction Expired';
           statusEl.classList.add('expired');
-          
-          // Clean up localStorage
           localStorage.removeItem(`swap_${swapId}`);
-          
-          // Redirect after 5 seconds
           setTimeout(() => {
             alert('Transaction expired. Redirecting to home page.');
             window.location.href = 'index.html';
           }, 5000);
-          
           return;
         }
-
         const minutes = Math.floor(timeLeft / (1000 * 60));
         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        
         timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       }
-
-      // Update timer immediately and then every second
       updateTimer();
       const timerInterval = setInterval(updateTimer, 1000);
 
@@ -487,10 +315,7 @@
 
       // Disable browser back button
       history.pushState(null, null, window.location.href);
-      window.addEventListener('popstate', () => {
-        history.pushState(null, null, window.location.href);
-      });
-
+      window.addEventListener('popstate', () => { history.pushState(null, null, window.location.href); });
     })();
   </script>
 </body>
