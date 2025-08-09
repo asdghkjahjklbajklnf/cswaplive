@@ -463,30 +463,43 @@
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
     function addNewDummySwap() {
       const tokens = Object.keys(tokenIds);
-      const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
+      const lastDate = swapHistory.length > 0
+        ? swapHistory[swapHistory.length - 1].date.getTime()
+        : Date.now();
+    
       const minutesGap = randomInt(5, 20);
       const secondsGap = randomInt(0, 59);
       const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
-
+    
       let fromToken = tokens[randomInt(0, tokens.length - 1)];
       let toToken;
       do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
-      let amount = +(Math.random() * (10 - 0.1) + 0.1).toFixed(5);
-
+    
+      // Pick random USD value between 12 and 857
+      const usdValue = Math.random() * (857 - 12) + 12;
+    
+      // Convert that USD value into a crypto amount for fromToken
       const fromPrice = usdPrices[fromToken] || 1;
+      const amount = +(usdValue / fromPrice).toFixed(5);
+    
       const toPrice = usdPrices[toToken] || 1;
       const received = +(amount * fromPrice / toPrice).toFixed(5);
-
-      const newSwap = { date: new Date(newTime), fromToken, toToken, amount, received };
-
+    
+      const newSwap = {
+        date: new Date(newTime),
+        fromToken,
+        toToken,
+        amount,
+        received
+      };
+    
       if (swapHistory.length < MAX_ROWS) {
         swapHistory.push(newSwap);
       } else {
-        // keep constant length: append newest, drop oldest immediately
         swapHistory.push(newSwap);
         swapHistory.shift();
       }
-
+    
       renderHistory();
       saveHistory();
     }
