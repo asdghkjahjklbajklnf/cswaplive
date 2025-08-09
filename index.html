@@ -13,8 +13,8 @@
       --bg-darker: #0a0a0f;
       --card: rgba(18, 18, 26, 0.7);
       --card-solid: #13131a;
-      --accent: #9b59ff; /* electric purple */
-      --accent-2: #6d43ff; /* indigo */
+      --accent: #9b59ff;
+      --accent-2: #6d43ff;
       --accent-hover: #7b4bff;
       --text-light: #e7e7f1;
       --text-muted: #a8a8c7;
@@ -82,7 +82,7 @@
       font-family:'Poppins',sans-serif; letter-spacing:.02em; user-select:text;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
     }
-    select:focus, input[type="number"]:focus, input[type="text"]focus{ outline:none; border-color:var(--accent); box-shadow:var(--ring);}
+    select:focus, input[type="number"]:focus, input[type="text"]:focus{ outline:none; border-color:var(--accent); box-shadow:var(--ring);}
     select:hover, input[type="number"]:hover, input[type="text"]:hover{ border-color:#3a2a7a;}
     input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button{ opacity:.3; }
 
@@ -299,9 +299,13 @@
 
     // ---------- History (localStorage) ----------
     const STORAGE_KEY = 'recent_swaps_v2';
-    const MAX_ROWS = 10;       // <<<<<< capped at 10
+    const MAX_ROWS = 10;       // cap
     const INITIAL_ROWS = 10;   // seed exactly 10
     let swapHistory = [];
+
+    // spacing range: 2:08 to 20:44 (in seconds)
+    const MIN_GAP_SEC = 128;
+    const MAX_GAP_SEC = 1244;
 
     function saveHistory() {
       const plain = swapHistory.map(s => ({ ...s, date: s.date.toISOString() }));
@@ -316,9 +320,9 @@
         const now = Date.now();
         swapHistory = arr
           .map(s => ({ ...s, date: new Date(s.date) }))
-          .filter(s => s.date.getTime() <= now)        // never in future
+          .filter(s => s.date.getTime() <= now)
           .sort((a,b) => a.date - b.date)
-          .slice(-MAX_ROWS);                            // trim to last 10 if old data had more
+          .slice(-MAX_ROWS);
         return true;
       } catch { return false; }
     }
@@ -399,11 +403,10 @@
 
       const seeded = [];
 
-      // Create INITIAL_ROWS - 1 in the past
+      // Create INITIAL_ROWS - 1 in the past with your gap range
       for (let i = 0; i < INITIAL_ROWS - 1; i++) {
-        const minutesBack = randomInt(2, 7);
-        const secondsBack = randomInt(0, 59);
-        t -= (minutesBack * 60 + secondsBack) * 1000;
+        const gapSec = randomInt(MIN_GAP_SEC, MAX_GAP_SEC);
+        t -= gapSec * 1000;
 
         const fromToken = tokens[randomInt(0, tokens.length - 1)];
         let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
@@ -418,33 +421,14 @@
         seeded.push({ date: new Date(t), fromToken, toToken, amount, received });
       }
 
-      // Sort ascending (oldest -> newest), clamp to not-in-future
+      // Sort ascending, clamp to not-in-future
       const safeNow = Date.now();
       swapHistory = seeded
         .filter(s => s.date.getTime() <= safeNow)
         .sort((a,b) => a.date - b.date);
 
       // Add the final 10th row at NOW
-      addNewDummySwapNow(); // this pushes one "now" row and trims if needed
-      // If we had fewer than 9 past rows (edge cases), top up with more past rows
-      while (swapHistory.length < MAX_ROWS) {
-        const lastOldest = swapHistory.length ? swapHistory[0].date.getTime() : Date.now();
-        const minutesBack = randomInt(8, 14);
-        const secondsBack = randomInt(0, 59);
-        const ts = lastOldest - (minutesBack * 60 + secondsBack) * 1000;
-
-        const fromToken = tokens[randomInt(0, tokens.length - 1)];
-        let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
-
-        const usdValue = Math.random() * (857 - 12) + 12;
-        const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
-        const toPrice   = usdPrices[toToken]   || DEFAULT_PRICES[toToken];
-
-        const amount   = +(usdValue / fromPrice).toFixed(5);
-        const received = +(usdValue / toPrice).toFixed(5);
-
-        swapHistory.unshift({ date: new Date(ts), fromToken, toToken, amount, received });
-      }
+      addNewDummySwapNow();
 
       // Ensure exactly 10 and render
       swapHistory = swapHistory.slice(-MAX_ROWS);
@@ -565,19 +549,14 @@
       });
     });
 
-    // Events
-    fromTokenSelect.addEventListener('change', updateUI);
-    toTokenSelect.addEventListener('change', updateUI);
-    fromAmountInput.addEventListener('input', () => { if (fromAmountInput.value < 0) fromAmountInput.value = 0; updateUI(); });
-    swapBtn.addEventListener('click', handleSwap);
-    amountToggleRadios.forEach(radio => {
-      radio.addEventListener('change', e => {
-        currentAmountType = e.target.value;
-        amountLabel.textContent = currentAmountType === 'crypto' ? 'Amount (Crypto)' : 'Amount (USD)';
-        fromAmountInput.value = '';
-        updateUI();
-      });
-    });
+    // ---- Live scheduler: random delay each time in your range ----
+    function scheduleNextSwap() {
+      const gapSec = randomInt(MIN_GAP_SEC, MAX_GAP_SEC);
+      setTimeout(() => {
+        addNewDummySwapNow();
+        scheduleNextSwap(); // schedule again with a new random gap
+      }, gapSec * 1000);
+    }
 
     // Init
     async function init() {
@@ -585,13 +564,13 @@
       const restored = loadHistory();
 
       if (!restored || swapHistory.length === 0) {
-        seedInitialHistory(); // seeds exactly 10 rows including "now"
+        seedInitialHistory(); // seeds exactly 10 rows (9 past spaced by your range + 1 at now)
       } else {
         renderHistory();
       }
 
-      // Every 10–20s: add a row with exact current time (PT-rendered), drop oldest
-      setInterval(() => { addNewDummySwapNow(); }, randomInt(10000, 20000));
+      // Start randomized live updates using your gap range
+      scheduleNextSwap();
 
       // Refresh prices every minute
       setInterval(fetchPrices, 60000);
