@@ -360,29 +360,84 @@
 
 <script>
   (() => {
-    const tokenIds = {
-      BTC: 'bitcoin',
-      ETH: 'ethereum',
-      USDT: 'tether',
-      BNB: 'binancecoin',
-      ADA: 'cardano',
-      SOL: 'solana',
-      LTC: 'litecoin'
+    // Binance USDT pairs for USD pricing
+    const binancePairs = {
+      BTC: 'BTCUSDT',
+      ETH: 'ETHUSDT',
+      USDT: null,        // pegged to ~$1
+      BNB: 'BNBUSDT',
+      ADA: 'ADAUSDT',
+      SOL: 'SOLUSDT',
+      LTC: 'LTCUSDT'
     };
 
     const usdPrices = {};
+    const DEFAULT_PRICES = { BTC: 64000, ETH: 3000, USDT: 1, BNB: 500, ADA: 0.6, SOL: 150, LTC: 80 };
+
+    // LocalStorage keys & history sizing
+    const PRICE_CACHE_KEY = 'usd_prices_binance_v1';
+    const STORAGE_KEY = 'recent_swaps_v2';
+    const MAX_ROWS = 20;
+    const INITIAL_ROWS = 10;
+
     let swapHistory = [];
 
-    // LocalStorage persistence config
-    const STORAGE_KEY = 'recent_swaps_v1';
-    const MAX_ROWS = 20;      // total rows to keep/render
-    const INITIAL_ROWS = 10;  // rows to create on first visit
+    // Elements
+    const fromTokenSelect = document.getElementById('from-token');
+    const toTokenSelect   = document.getElementById('to-token');
+    const fromAmountInput = document.getElementById('from-amount');
+    const rateDisplay     = document.getElementById('rate-display');
+    const swapBtn         = document.querySelector('.swap-btn');
+    const historyTbody    = document.getElementById('swap-history');
+    const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
+    const amountLabel     = document.getElementById('amount-label');
+    const errorContainer  = document.getElementById('error-container');
+    const destAddressInput= document.getElementById('dest-address');
 
+    let currentAmountType = 'crypto';
+
+    // Apply prices into usdPrices with sensible defaults
+    function applyPrices(map) {
+      for (const k of Object.keys(binancePairs)) {
+        usdPrices[k] = map[k] ?? DEFAULT_PRICES[k];
+      }
+      if (!usdPrices.USDT || !isFinite(usdPrices.USDT)) usdPrices.USDT = 1;
+    }
+
+    // Fetch prices from Binance (USDT pairs)
+    async function fetchPrices() {
+      const symbols = Object.values(binancePairs).filter(Boolean); // skip USDT
+      try {
+        const url = 'https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(symbols));
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Binance status ' + res.status);
+        const arr = await res.json(); // [{symbol, price}]
+        const fresh = { USDT: 1 };
+        for (const row of arr) {
+          const match = Object.entries(binancePairs).find(([sym, pair]) => pair === row.symbol);
+          if (match) fresh[match[0]] = parseFloat(row.price);
+        }
+        applyPrices(fresh);
+        localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify({ t: Date.now(), prices: fresh }));
+      } catch (e) {
+        // fallback to cache or hard defaults
+        const cached = localStorage.getItem(PRICE_CACHE_KEY);
+        if (cached) {
+          try {
+            const { prices } = JSON.parse(cached);
+            applyPrices(prices || DEFAULT_PRICES);
+          } catch { applyPrices(DEFAULT_PRICES); }
+        } else {
+          applyPrices(DEFAULT_PRICES);
+        }
+      }
+    }
+
+    // History persistence
     function saveHistory() {
       const plain = swapHistory.map(s => ({ ...s, date: s.date.toISOString() }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(plain));
     }
-
     function loadHistory() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return false;
@@ -391,157 +446,86 @@
         if (!Array.isArray(arr)) return false;
         swapHistory = arr.map(s => ({ ...s, date: new Date(s.date) }));
         return true;
-      } catch {
-        return false;
-      }
+      } catch { return false; }
     }
 
-    // Elements
-    const fromTokenSelect = document.getElementById('from-token');
-    const toTokenSelect = document.getElementById('to-token');
-    const fromAmountInput = document.getElementById('from-amount');
-    const rateDisplay = document.getElementById('rate-display');
-    const swapBtn = document.querySelector('.swap-btn');
-    const historyTbody = document.getElementById('swap-history');
-    const amountToggleRadios = document.querySelectorAll('input[name="amount-type"]');
-    const amountLabel = document.getElementById('amount-label');
-    const errorContainer = document.getElementById('error-container');
-    const destAddressInput = document.getElementById('dest-address');
-
-    let currentAmountType = 'crypto';
-
-    // Footer year (if present)
-    const yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // Generate UUID for swap ID
-    function generateUUID() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    }
-
-    // Fetch prices from CoinGecko
-    const binanceSymbols = { BTC:'BTCUSDT', ETH:'ETHUSDT', USDT:'USDTUSDT', BNB:'BNBUSDT', ADA:'ADAUSDT', SOL:'SOLUSDT', LTC:'LTCUSDT' };
-    
-    async function fetchPrices() {
-      try {
-        const symbols = Object.values(binanceSymbols);
-        const url = 'https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(symbols));
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Binance ' + res.status);
-        const arr = await res.json();
-        const bySym = Object.fromEntries(arr.map(o => [o.symbol, parseFloat(o.price)]));
-        for (const [sym, pair] of Object.entries(binanceSymbols)) {
-          usdPrices[sym] = bySym[pair] ?? 1;
-        }
-        // force USDT ≈ 1 if missing
-        if (!usdPrices.USDT || !isFinite(usdPrices.USDT)) usdPrices.USDT = 1;
-      } catch (e) {
-        console.warn('Binance error', e);
-        for (const k of Object.keys(tokenIds)) usdPrices[k] = 1;
-      }
-    }
-
-    // Helper to format date/time
+    // Format date/time
     function formatDate(date) { return date.toLocaleString(); }
 
-    // Render recent swap history
+    // Render table
     function renderHistory() {
       historyTbody.innerHTML = '';
       for (const swap of swapHistory.slice().reverse()) {
         const tr = document.createElement('tr');
-        const tdDate = document.createElement('td');
-        tdDate.textContent = formatDate(swap.date); tr.appendChild(tdDate);
-        const tdFrom = document.createElement('td');
-        tdFrom.textContent = swap.fromToken; tr.appendChild(tdFrom);
-        const tdAmount = document.createElement('td');
-        tdAmount.textContent = swap.amount.toFixed(5); tr.appendChild(tdAmount);
-        const tdTo = document.createElement('td');
-        tdTo.textContent = swap.toToken; tr.appendChild(tdTo);
-        const tdReceived = document.createElement('td');
-        tdReceived.textContent = swap.received.toFixed(5); tr.appendChild(tdReceived);
+        const tdDate = document.createElement('td'); tdDate.textContent = formatDate(swap.date); tr.appendChild(tdDate);
+        const tdFrom = document.createElement('td'); tdFrom.textContent = swap.fromToken; tr.appendChild(tdFrom);
+        const tdAmount = document.createElement('td'); tdAmount.textContent = swap.amount.toFixed(5); tr.appendChild(tdAmount);
+        const tdTo = document.createElement('td'); tdTo.textContent = swap.toToken; tr.appendChild(tdTo);
+        const tdReceived = document.createElement('td'); tdReceived.textContent = swap.received.toFixed(5); tr.appendChild(tdReceived);
         historyTbody.appendChild(tr);
       }
     }
 
-    // Add a new dummy swap every ~3-7 mins (scaled here to 10s-20s)
+    // Utilities
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    // Generate dummy swap with USD between $12 and $857
     function addNewDummySwap() {
-      const tokens = Object.keys(tokenIds);
-      const lastDate = swapHistory.length > 0
-        ? swapHistory[swapHistory.length - 1].date.getTime()
-        : Date.now();
-    
+      const tokens = Object.keys(binancePairs);
+      const lastTime = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
       const minutesGap = randomInt(5, 20);
       const secondsGap = randomInt(0, 59);
-      const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
-    
+      const newTime = lastTime + (minutesGap * 60 + secondsGap) * 1000;
+
       let fromToken = tokens[randomInt(0, tokens.length - 1)];
       let toToken;
       do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
-    
-      // Pick random USD value between 12 and 857
+
       const usdValue = Math.random() * (857 - 12) + 12;
-    
-      // Convert that USD value into a crypto amount for fromToken
-      const fromPrice = usdPrices[fromToken] || 1;
-      const amount = +(usdValue / fromPrice).toFixed(5);
-    
-      const toPrice = usdPrices[toToken] || 1;
-      const received = +(amount * fromPrice / toPrice).toFixed(5);
-    
-      const newSwap = {
-        date: new Date(newTime),
-        fromToken,
-        toToken,
-        amount,
-        received
-      };
-    
-      if (swapHistory.length < MAX_ROWS) {
-        swapHistory.push(newSwap);
-      } else {
-        swapHistory.push(newSwap);
-        swapHistory.shift();
-      }
-    
+
+      const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
+      const toPrice   = usdPrices[toToken]   || DEFAULT_PRICES[toToken];
+
+      const amount   = +(usdValue / fromPrice).toFixed(5);
+      const received = +(usdValue / toPrice).toFixed(5);
+
+      const newSwap = { date: new Date(newTime), fromToken, toToken, amount, received };
+
+      if (swapHistory.length < MAX_ROWS) swapHistory.push(newSwap);
+      else { swapHistory.push(newSwap); swapHistory.shift(); }
+
       renderHistory();
       saveHistory();
     }
 
-    // Calculate received tokens for swap UI based on current input & prices
+    // Calculate received tokens for UI estimate
     function calculateReceived(from, to, amount, amountType) {
       if (!from || !to || !amount || amount <= 0 || from === to) return null;
-      const fromPrice = usdPrices[from] || 1;
-      const toPrice = usdPrices[to] || 1;
-      if (amountType === 'crypto') { return amount * fromPrice / toPrice; }
-      else { return amount / toPrice; }
+      const fromPrice = usdPrices[from] || DEFAULT_PRICES[from];
+      const toPrice   = usdPrices[to]   || DEFAULT_PRICES[to];
+      if (amountType === 'crypto') return amount * fromPrice / toPrice;
+      return amount / toPrice; // USD input
     }
 
-    // Update the swap button enable state and rate display
+    // UI updates
     function updateUI() {
       const from = fromTokenSelect.value;
-      const to = toTokenSelect.value;
-      let amountVal = parseFloat(fromAmountInput.value);
-      if (isNaN(amountVal) || amountVal <= 0) {
-        swapBtn.disabled = true; rateDisplay.textContent = 'Enter a valid amount'; clearError(); return;
-      }
-      if (!from || !to || from === to) {
-        swapBtn.disabled = true; rateDisplay.textContent = 'Select different tokens'; clearError(); return;
-      }
-      const fromPrice = usdPrices[from] || 1;
-      let usdValue = 0;
-      if (currentAmountType === 'crypto') { usdValue = amountVal * fromPrice; }
-      else { usdValue = amountVal; }
-      if (usdValue < 10) {
-        swapBtn.disabled = true; rateDisplay.textContent = `Minimum swap amount is $10 USD equivalent`; clearError(); return;
-      } else { swapBtn.disabled = false; }
+      const to   = toTokenSelect.value;
+      const amountVal = parseFloat(fromAmountInput.value);
+
+      if (isNaN(amountVal) || amountVal <= 0) { swapBtn.disabled = true; rateDisplay.textContent = 'Enter a valid amount'; clearError(); return; }
+      if (!from || !to || from === to) { swapBtn.disabled = true; rateDisplay.textContent = 'Select different tokens'; clearError(); return; }
+
+      const fromPrice = usdPrices[from] || DEFAULT_PRICES[from];
+      const usdValue = currentAmountType === 'crypto' ? amountVal * fromPrice : amountVal;
+
+      if (usdValue < 10) { swapBtn.disabled = true; rateDisplay.textContent = 'Minimum swap amount is $10 USD equivalent'; clearError(); return; }
+      swapBtn.disabled = false;
+
       clearError();
       const received = calculateReceived(from, to, amountVal, currentAmountType);
       if (received === null) { rateDisplay.textContent = 'Select valid tokens and amount'; return; }
+
       if (currentAmountType === 'crypto') {
         rateDisplay.textContent = `Estimated: ${received.toFixed(5)} ${to} (includes 1% fee)`;
       } else {
@@ -550,7 +534,7 @@
       }
     }
 
-    // Show error message below swap form
+    // Error helpers
     function showError(msg) {
       errorContainer.innerHTML = `
         <div class="error-message" role="alert" aria-live="assertive">
@@ -563,7 +547,15 @@
     }
     function clearError() { errorContainer.innerHTML = ''; }
 
-    // Swap form submit handler
+    // UUID
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+      });
+    }
+
+    // Submit handler
     function handleSwap(e) {
       e.preventDefault();
       if (swapBtn.disabled) {
@@ -572,20 +564,24 @@
         }
         return;
       }
+
       const from = fromTokenSelect.value;
-      const to = toTokenSelect.value;
+      const to   = toTokenSelect.value;
       let amountVal = parseFloat(fromAmountInput.value);
       if (isNaN(amountVal) || amountVal <= 0 || !from || !to || from === to) return;
+
       let amountCrypto;
-      if (currentAmountType === 'crypto') { amountCrypto = amountVal; }
-      else { const fromPrice = usdPrices[from] || 1; amountCrypto = amountVal / fromPrice; }
+      const fromPrice = usdPrices[from] || DEFAULT_PRICES[from];
+      if (currentAmountType === 'crypto') amountCrypto = amountVal;
+      else amountCrypto = amountVal / fromPrice;
+
       const swapId = generateUUID();
-      const fromPrice = usdPrices[from] || 1;
-      const toPrice = usdPrices[to] || 1;
+      const toPrice   = usdPrices[to]   || DEFAULT_PRICES[to];
       const amountUsd = amountCrypto * fromPrice;
       const receivedBeforeFee = amountCrypto * fromPrice / toPrice;
       const fee = receivedBeforeFee * 0.01;
       const receivedAfterFee = receivedBeforeFee - fee;
+
       const swapData = {
         id: swapId,
         fromToken: from,
@@ -603,7 +599,7 @@
       window.location.href = `swap.html?id=${swapId}`;
     }
 
-    // Tabs (safe if none present)
+    // (Optional) tabs support if present
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     function activateTab(index) {
@@ -612,10 +608,7 @@
         btn.classList.toggle('active', selected);
         btn.setAttribute('aria-selected', selected);
         btn.tabIndex = selected ? 0 : -1;
-        if (tabContents[i]) {
-          tabContents[i].classList.toggle('active', selected);
-          tabContents[i].hidden = !selected;
-        }
+        if (tabContents[i]) { tabContents[i].classList.toggle('active', selected); tabContents[i].hidden = !selected; }
       });
     }
     tabButtons.forEach((btn, i) => {
@@ -640,20 +633,22 @@
       });
     });
 
-    // Init
+    // Init: wait for prices, then seed history
     async function init() {
-      await fetchPrices();
+      await fetchPrices();            // ensure we have prices first
 
-      const restored = loadHistory();
+      const restored = loadHistory(); // try load history
       if (!restored) {
-        for (let i = 0; i < INITIAL_ROWS; i++) { addNewDummySwap(); }
+        for (let i = 0; i < INITIAL_ROWS; i++) addNewDummySwap();
         saveHistory();
       } else {
         renderHistory();
       }
 
-      // Keep list constant size while adding new entries periodically
+      // Keep adding (constant size)
       setInterval(() => { addNewDummySwap(); }, randomInt(10000, 20000));
+      // Quietly refresh prices every minute
+      setInterval(fetchPrices, 60000);
     }
     init();
   })();
