@@ -378,7 +378,14 @@
       let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
 
       // USD-bounded generator ($12–$857)
-      const usdValue = Math.random() * (857 - 12) + 12;
+      let usdValue;
+      if (Math.random() < 0.7) {
+        // 70% chance: $12–$100
+        usdValue = Math.random() * (100 - 12) + 12;
+      } else {
+        // 30% chance: $100–$857
+        usdValue = Math.random() * (857 - 100) + 100;
+      }
 
       const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
       const toPrice   = usdPrices[toToken]   || DEFAULT_PRICES[toToken];
@@ -411,7 +418,14 @@
         const fromToken = tokens[randomInt(0, tokens.length - 1)];
         let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
 
-        const usdValue = Math.random() * (857 - 12) + 12;
+        let usdValue;
+        if (Math.random() < 0.7) {
+          // 70% chance: $12–$100
+          usdValue = Math.random() * (100 - 12) + 12;
+        } else {
+          // 30% chance: $100–$857
+          usdValue = Math.random() * (857 - 100) + 100;
+        }
         const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
         const toPrice   = usdPrices[toToken]   || DEFAULT_PRICES[toToken];
 
