@@ -12,8 +12,8 @@
       --bg-darker: #0a0a0f;
       --card: rgba(18, 18, 26, 0.7);
       --card-solid: #13131a;
-      --accent: #9b59ff; /* electric purple */
-      --accent-2: #6d43ff; /* indigo */
+      --accent: #9b59ff;
+      --accent-2: #6d43ff;
       --accent-hover: #7b4bff;
       --text-light: #e7e7f1;
       --text-muted: #a8a8c7;
@@ -229,7 +229,7 @@
           <table role="table" aria-describedby="history-description">
             <thead>
               <tr>
-                <th scope="col">Date & Time</th>
+                <th scope="col">Date & Time (PT)</th>
                 <th scope="col">From</th>
                 <th scope="col">Amount</th>
                 <th scope="col">To</th>
@@ -313,9 +313,26 @@
         const arr = JSON.parse(raw);
         if (!Array.isArray(arr)) return false;
         swapHistory = arr.map(s => ({ ...s, date: new Date(s.date) }));
+        // Guard against any future-stamped items from older versions:
+        const now = Date.now();
+        swapHistory = swapHistory.filter(s => s.date.getTime() <= now);
         return true;
       } catch { return false; }
     }
+
+    // ---------- Pacific Time formatter (always PT) ----------
+    const PT_FORMATTER = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      timeZoneName: 'short' // will show PST/PDT as appropriate
+    });
+    function formatDatePT(date) { return PT_FORMATTER.format(date); }
 
     // ---------- DOM ----------
     const fromTokenSelect = document.getElementById('from-token');
@@ -332,14 +349,14 @@
     let currentAmountType = 'crypto';
 
     // ---------- Helpers ----------
-    function formatDate(date) { return date.toLocaleString(); }
     function randomInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
     function renderHistory() {
       historyTbody.innerHTML = '';
+      // Show newest first
       for (const swap of swapHistory.slice().reverse()) {
         const tr = document.createElement('tr');
-        const tdDate = document.createElement('td'); tdDate.textContent = formatDate(swap.date); tr.appendChild(tdDate);
+        const tdDate = document.createElement('td'); tdDate.textContent = formatDatePT(swap.date); tr.appendChild(tdDate);
         const tdFrom = document.createElement('td'); tdFrom.textContent = swap.fromToken; tr.appendChild(tdFrom);
         const tdAmount = document.createElement('td'); tdAmount.textContent = swap.amount.toFixed(5); tr.appendChild(tdAmount);
         const tdTo = document.createElement('td'); tdTo.textContent = swap.toToken; tr.appendChild(tdTo);
@@ -348,17 +365,13 @@
       }
     }
 
-    // USD-bounded generator ($12–$857)
-    function addNewDummySwap() {
+    // Create a new dummy swap with timestamp = NOW (no future)
+    function addNewDummySwapNow() {
       const tokens = Object.keys(CG_IDS);
-      const lastDate = swapHistory.length > 0 ? swapHistory[swapHistory.length - 1].date.getTime() : Date.now();
-      const minutesGap = randomInt(5, 20);
-      const secondsGap = randomInt(0, 59);
-      const newTime = lastDate + (minutesGap * 60 + secondsGap) * 1000;
-
-      let fromToken = tokens[randomInt(0, tokens.length - 1)];
+      const fromToken = tokens[randomInt(0, tokens.length - 1)];
       let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
 
+      // USD-bounded generator ($12–$857)
       const usdValue = Math.random() * (857 - 12) + 12;
 
       const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
@@ -367,10 +380,50 @@
       const amount   = +(usdValue / fromPrice).toFixed(5); // from token amount
       const received = +(usdValue / toPrice).toFixed(5);   // to token amount
 
-      const newSwap = { date: new Date(newTime), fromToken, toToken, amount, received };
+      const newSwap = { date: new Date(), fromToken, toToken, amount, received };
 
-      if (swapHistory.length < MAX_ROWS) swapHistory.push(newSwap);
-      else { swapHistory.push(newSwap); swapHistory.shift(); }
+      // Cap list: remove oldest first if full, then push newest
+      if (swapHistory.length >= MAX_ROWS) swapHistory.shift();
+      swapHistory.push(newSwap);
+
+      renderHistory();
+      saveHistory();
+    }
+
+    // Seed INITIAL_ROWS items in the past, ending exactly at now
+    function seedInitialHistory() {
+      const tokens = Object.keys(CG_IDS);
+      const now = Date.now();
+      let t = now;
+
+      const seeded = [];
+      for (let i = 0; i < INITIAL_ROWS; i++) {
+        // Walk backwards by 2–7 minutes + 0–59 seconds each step
+        const minutesBack = randomInt(2, 7);
+        const secondsBack = randomInt(0, 59);
+        t -= (minutesBack * 60 + secondsBack) * 1000;
+
+        const fromToken = tokens[randomInt(0, tokens.length - 1)];
+        let toToken; do { toToken = tokens[randomInt(0, tokens.length - 1)]; } while (toToken === fromToken);
+
+        const usdValue = Math.random() * (857 - 12) + 12;
+        const fromPrice = usdPrices[fromToken] || DEFAULT_PRICES[fromToken];
+        const toPrice   = usdPrices[toToken]   || DEFAULT_PRICES[toToken];
+
+        const amount   = +(usdValue / fromPrice).toFixed(5);
+        const received = +(usdValue / toPrice).toFixed(5);
+
+        seeded.push({ date: new Date(t), fromToken, toToken, amount, received });
+      }
+
+      // Ensure strictly not in the future and sorted ascending by date
+      const safeNow = Date.now();
+      swapHistory = seeded
+        .filter(s => s.date.getTime() <= safeNow)
+        .sort((a,b) => a.date - b.date);
+
+      // Append one item exactly at NOW so the newest equals real-life time
+      addNewDummySwapNow();
 
       renderHistory();
       saveHistory();
@@ -503,18 +556,24 @@
       });
     });
 
-    // Init: wait for prices first to avoid bogus amounts
+    // Init
     async function init() {
-      await fetchPrices(); // CG only
+      await fetchPrices();
       const restored = loadHistory();
-      if (!restored) {
-        for (let i = 0; i < INITIAL_ROWS; i++) addNewDummySwap();
-        saveHistory();
+
+      if (!restored || swapHistory.length === 0) {
+        seedInitialHistory();
       } else {
+        // Ensure ascending order by date, and render
+        swapHistory.sort((a,b) => a.date - b.date);
         renderHistory();
       }
-      setInterval(() => { addNewDummySwap(); }, randomInt(10000, 20000));
-      setInterval(fetchPrices, 60000); // refresh every minute
+
+      // Every 10–20s: add a row with exact current time (PT-rendered)
+      setInterval(() => { addNewDummySwapNow(); }, randomInt(10000, 20000));
+
+      // Refresh prices every minute
+      setInterval(fetchPrices, 60000);
     }
     init();
   })();
