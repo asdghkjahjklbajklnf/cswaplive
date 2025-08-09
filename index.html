@@ -424,16 +424,24 @@
     }
 
     // Fetch prices from CoinGecko
+    const binanceSymbols = { BTC:'BTCUSDT', ETH:'ETHUSDT', USDT:'USDTUSDT', BNB:'BNBUSDT', ADA:'ADAUSDT', SOL:'SOLUSDT', LTC:'LTCUSDT' };
+    
     async function fetchPrices() {
       try {
-        const ids = Object.values(tokenIds).join(',');
-        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-        const data = await res.json();
-        for (const [key, id] of Object.entries(tokenIds)) {
-          usdPrices[key] = data[id]?.usd ?? 1;
+        const symbols = Object.values(binanceSymbols);
+        const url = 'https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(symbols));
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Binance ' + res.status);
+        const arr = await res.json();
+        const bySym = Object.fromEntries(arr.map(o => [o.symbol, parseFloat(o.price)]));
+        for (const [sym, pair] of Object.entries(binanceSymbols)) {
+          usdPrices[sym] = bySym[pair] ?? 1;
         }
+        // force USDT ≈ 1 if missing
+        if (!usdPrices.USDT || !isFinite(usdPrices.USDT)) usdPrices.USDT = 1;
       } catch (e) {
-        console.error('Error fetching prices:', e);
+        console.warn('Binance error', e);
+        for (const k of Object.keys(tokenIds)) usdPrices[k] = 1;
       }
     }
 
