@@ -37,7 +37,7 @@ function _0xf50f(){const _0x75bae7=['Unknown\x20Address','select','parse','creat
   });
 
   againBtn.addEventListener("click", () => {
-    location.href = "index.html";
+    location.href = "/";
   });
 
   modalEl.addEventListener("click", (e) => {
